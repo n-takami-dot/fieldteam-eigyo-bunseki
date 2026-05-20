@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>営業分析ダッシュボード</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@500&display=swap');
+:root {
+  --bg: #f7f6f2;
+  --surface: #ffffff;
+  --border: rgba(0,0,0,0.08);
+  --text-primary: #1a1a18;
+  --text-secondary: #6b6a64;
+  --text-muted: #a09f98;
+  --accent: #3c3489;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ── */
+header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 40px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.logo {
+  width: 32px; height: 32px;
+  background: var(--accent);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 15px; font-weight: 700;
+}
+.header-title { font-size: 15px; font-weight: 700; }
+.header-date {
+  margin-left: auto;
+  font-size: 12px; color: var(--text-muted);
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── Main ── */
+main {
+  flex: 1;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 48px 24px 64px;
+  width: 100%;
+}
+
+.page-title {
+  font-size: 28px; font-weight: 700;
+  margin-bottom: 6px;
+}
+.page-sub {
+  font-size: 14px; color: var(--text-secondary);
+  margin-bottom: 40px;
+}
+
+/* ── Section ── */
+.section-label {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── Cards ── */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 48px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 22px 18px;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: box-shadow .15s, transform .15s, border-color .15s;
+  cursor: pointer;
+}
+.card:hover {
+  box-shadow: 0 8px 28px rgba(0,0,0,0.09);
+  transform: translateY(-2px);
+  border-color: rgba(0,0,0,0.14);
+}
+.card:active { transform: translateY(0); }
+
+.card-icon {
+  width: 42px; height: 42px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.card-title {
+  font-size: 15px; font-weight: 700;
+  line-height: 1.3;
+}
+.card-desc {
+  font-size: 12px; color: var(--text-secondary);
+  line-height: 1.7; flex: 1;
+}
+.card-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+.card-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 9px; border-radius: 20px;
+  font-size: 11px; font-weight: 500;
+}
+.card-arrow {
+  font-size: 14px; color: var(--text-muted);
+  transition: transform .15s;
+}
+.card:hover .card-arrow { transform: translateX(3px); }
+
+/* ── How to use ── */
+.how-to {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px 28px;
+}
+.how-to-title {
+  font-size: 14px; font-weight: 700; margin-bottom: 16px;
+}
+.step-list { display: flex; flex-direction: column; gap: 12px; }
+.step {
+  display: flex; align-items: flex-start; gap: 12px;
+  font-size: 13px; color: var(--text-secondary); line-height: 1.6;
+}
+.step-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: #f0ede4; color: var(--text-secondary);
+  font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+}
+.step b { color: var(--text-primary); font-weight: 500; }
+
+/* ── Footer ── */
+footer {
+  text-align: center;
+  padding: 24px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">分</div>
+  <div class="header-title">営業分析ダッシュボード</div>
+  <div class="header-date" id="today"></div>
+</header>
+
+<main>
+  <div class="page-title">分析レポート一覧</div>
+  <div class="page-sub">ファイルをクリックすると別タブで開きます。同じフォルダに全ファイルを置いてください。</div>
+
+  <div class="section-label">STP 分析</div>
+  <div class="cards">
+
+    <a class="card" href="stp_analysis.html" target="_blank">
+      <div class="card-icon" style="background:#EEEDFE;">📊</div>
+      <div class="card-title">STP分析</div>
+      <div class="card-desc">
+        店舗分類表をもとにセグメンテーション・ターゲティング・ポジショニングを整理。売上ランク別構成比や4象限ポジションマップを含む。
+      </div>
+      <div class="card-footer">
+        <span class="card-tag" style="background:#EEEDFE;color:#3C3489;">STP・戦略</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="section-label">店舗散布図</div>
+  <div class="cards">
+    <a class="card" href="store_scatter_monthly.html" target="_blank">
+      <div class="card-icon" style="background:#FAEEDA;">📈</div>
+      <div class="card-title">店舗散布図（月平均金額）</div>
+      <div class="card-desc">
+        縦軸：月平均金額（万円）／横軸：店舗裁量／色：立地条件。114店舗対応・更新版データ使用。S〜Eランクゾーン帯で背景色分け。
+      </div>
+      <div class="card-footer">
+        <span class="card-tag" style="background:#FAEEDA;color:#633806;">最新データ</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="section-label">使い方</div>
+  <div class="how-to">
+    <div class="how-to-title">このランチャーの使い方</div>
+    <div class="step-list">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div><b>全ファイルを同じフォルダに置く</b><br>
+        index.html・stp_analysis.html・store_scatter_desktop.html・store_scatter_monthly.html の4つを同じフォルダにまとめる。</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div><b>index.html をブラウザのブックマークに登録</b><br>
+        ⌘D（Mac）または Ctrl+D（Windows）でブックマークに追加しておくと、次回からすぐ開ける。</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div><b>会議での共有</b><br>
+        発表者がブラウザでこのページを開き、カードをクリックして別タブで各資料を表示。画面共有しながらフィルター操作が可能。</div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div><b>ファイルを追加するときは</b><br>
+        新しいHTMLファイルを同じフォルダに置き、index.html のカード部分にコピーして追加するだけ。</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>営業分析ダッシュボード　—　同じフォルダ内のファイルにリンクしています</footer>
+
+<script>
+const d = new Date();
+document.getElementById("today").textContent =
+  d.getFullYear() + "." +
+  String(d.getMonth()+1).padStart(2,"0") + "." +
+  String(d.getDate()).padStart(2,"0");
+</script>
+
+</body>
+</html>

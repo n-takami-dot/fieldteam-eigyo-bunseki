@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>店舗散布図 — 月平均金額 × 店舗裁量</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap');
+:root {
+  --bg: #f7f6f2;
+  --surface: #ffffff;
+  --border: rgba(0,0,0,0.08);
+  --text-primary: #1a1a18;
+  --text-secondary: #6b6a64;
+  --text-muted: #a09f98;
+  /* 帯の色 */
+  --z100: rgba(108,99,212,0.10);   /* S: 100万以上   紫 */
+  --z50:  rgba(26,153,104,0.10);   /* 50〜100        緑 */
+  --z30:  rgba(43,127,212,0.10);   /* 30〜50         青 */
+  --z20:  rgba(212,135,15,0.10);   /* 20〜30         黄 */
+  --z10:  rgba(196,74,32,0.10);    /* 10〜20         橙 */
+  --z0:   rgba(100,100,100,0.07);  /* 10以下         グレー */
+  --lb-100: rgba(108,99,212,0.55);
+  --lb-50:  rgba(26,153,104,0.55);
+  --lb-30:  rgba(43,127,212,0.55);
+  --lb-20:  rgba(212,135,15,0.55);
+  --lb-10:  rgba(196,74,32,0.55);
+  --lb-0:   rgba(120,120,120,0.55);
+  /* 立地色 */
+  --商業施設内: #6c63d4;
+  --ロードサイド: #1a9968;
+  --住宅地: #2b7fd4;
+  --駅前: #d4870f;
+  --郊外: #c44a20;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  height: 100vh;
+  display: grid;
+  grid-template-rows: 52px 1fr;
+  grid-template-columns: 232px 1fr;
+  overflow: hidden;
+}
+header {
+  grid-column: 1/-1;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 16px;
+}
+.header-title { font-size: 14px; font-weight: 700; }
+.header-sub   { font-size: 12px; color: var(--text-secondary); }
+.header-badge {
+  margin-left: auto;
+  background: #f0ede4;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-family: 'DM Mono', monospace;
+}
+aside {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 18px 14px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.sec-label {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 8px;
+}
+.stat-block {
+  background: #f7f6f2; border-radius: 10px;
+  padding: 10px 12px; margin-bottom: 6px;
+}
+.stat-label { font-size: 11px; color: var(--text-muted); margin-bottom: 3px; }
+.stat-value { font-size: 20px; font-weight: 700; font-family: 'DM Mono', monospace; line-height: 1; }
+.stat-unit  { font-size: 11px; font-weight: 400; margin-left: 2px; color: var(--text-secondary); }
+
+.loc-btn {
+  display: flex; align-items: center; gap: 9px;
+  width: 100%; padding: 6px 9px; border-radius: 8px;
+  border: none; background: none; cursor: pointer;
+  font-size: 13px; font-family: 'Noto Sans JP', sans-serif;
+  color: var(--text-primary); transition: background .12s;
+  margin-bottom: 2px;
+}
+.loc-btn:hover { background: #f0ede4; }
+.loc-btn.off   { opacity: .35; }
+.loc-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.loc-count { margin-left: auto; font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text-muted); }
+
+.chain-select {
+  width: 100%; padding: 7px 10px; border-radius: 8px;
+  border: 1px solid var(--border); background: #f7f6f2;
+  font-size: 13px; font-family: 'Noto Sans JP', sans-serif;
+  color: var(--text-primary); appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6a64' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center; cursor: pointer;
+}
+
+/* zone legend */
+.zone-row {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 5px; font-size: 12px; color: var(--text-secondary);
+}
+.zone-swatch {
+  width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0;
+}
+
+main {
+  display: flex; flex-direction: column;
+  padding: 18px 22px 14px; gap: 10px;
+  overflow: hidden; min-height: 0;
+}
+.chart-wrap {
+  flex: 1; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 14px;
+  position: relative; overflow: hidden; min-height: 0;
+}
+#chart-svg { width: 100%; height: 100%; display: block; }
+
+.tooltip {
+  position: fixed;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 14px;
+  font-size: 12px; line-height: 1.7;
+  pointer-events: none; display: none; z-index: 100;
+  box-shadow: 0 4px 20px rgba(0,0,0,.10);
+  min-width: 200px;
+}
+.tip-name  { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+.tip-chain { color: var(--text-secondary); margin-bottom: 6px; }
+.tip-row   { display: flex; justify-content: space-between; gap: 14px; }
+.tip-key   { color: var(--text-muted); }
+.tip-val   { font-weight: 500; font-family: 'DM Mono', monospace; }
+.loc-pill  {
+  display: inline-block; padding: 2px 8px; border-radius: 20px;
+  font-size: 11px; font-weight: 500; margin-top: 5px;
+}
+
+#detail-bar {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 9px 16px; font-size: 13px;
+  display: none; flex-shrink: 0; line-height: 1.7;
+}
+.dot { cursor: pointer; transition: opacity .12s; }
+.dot:hover { opacity: 1 !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="header-title">店舗散布図</div>
+  </div>
+  <div class="header-sub">縦軸：月平均金額（万円）　横軸：店舗裁量　色：立地条件</div>
+  <div class="header-badge" id="count-badge">114店舗</div>
+</header>
+
+<aside>
+  <div>
+    <div class="sec-label">統計</div>
+    <div class="stat-block">
+      <div class="stat-label">表示中店舗数</div>
+      <div class="stat-value" id="stat-count">114<span class="stat-unit">店</span></div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-label">月平均合計</div>
+      <div class="stat-value" id="stat-sum">—<span class="stat-unit">万円</span></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="sec-label">ゾーン凡例（月平均）</div>
+    <div class="zone-row"><div class="zone-swatch" style="background:rgba(108,99,212,0.22);border:1px solid rgba(108,99,212,0.4);"></div>S　100万円以上</div>
+    <div class="zone-row"><div class="zone-swatch" style="background:rgba(26,153,104,0.22);border:1px solid rgba(26,153,104,0.4);"></div>A　50〜100万円</div>
+    <div class="zone-row"><div class="zone-swatch" style="background:rgba(43,127,212,0.22);border:1px solid rgba(43,127,212,0.4);"></div>B　30〜50万円</div>
+    <div class="zone-row"><div class="zone-swatch" style="background:rgba(212,135,15,0.22);border:1px solid rgba(212,135,15,0.4);"></div>C　20〜30万円</div>
+    <div class="zone-row"><div class="zone-swatch" style="background:rgba(196,74,32,0.22);border:1px solid rgba(196,74,32,0.4);"></div>D　10〜20万円</div>
+    <div class="zone-row"><div class="zone-swatch" style="background:rgba(130,130,130,0.18);border:1px solid rgba(130,130,130,0.35);"></div>E　10万円以下</div>
+  </div>
+
+  <div>
+    <div class="sec-label">立地条件</div>
+    <div id="loc-btns"></div>
+  </div>
+
+  <div>
+    <div class="sec-label">チェーン絞り込み</div>
+    <select class="chain-select" id="chain-sel"><option value="">すべて</option></select>
+  </div>
+</aside>
+
+<main>
+  <div class="chart-wrap" id="chart-wrap">
+    <svg id="chart-svg"></svg>
+  </div>
+  <div id="detail-bar"></div>
+</main>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+const LOC_CFG = {
+  "商業施設内": { color:"#6c63d4", bg:"#eeedfe", tc:"#3c3489" },
+  "ロードサイド":{ color:"#1a9968", bg:"#e1f5ee", tc:"#085041" },
+  "住宅地":      { color:"#2b7fd4", bg:"#e6f1fb", tc:"#0c447c" },
+  "駅前":        { color:"#d4870f", bg:"#faeeda", tc:"#633806" },
+  "郊外":        { color:"#c44a20", bg:"#faece7", tc:"#712b13" },
+};
+
+// ゾーン定義: [下限万, 上限万, fill, stroke, ラベル]
+const ZONES = [
+  [100, 160,  "rgba(108,99,212,0.10)",  "rgba(108,99,212,0.30)", "S　100万円以上"],
+  [50,  100,  "rgba(26,153,104,0.10)",  "rgba(26,153,104,0.30)", "A　50〜100万円"],
+  [30,  50,   "rgba(43,127,212,0.10)",  "rgba(43,127,212,0.30)", "B　30〜50万円"],
+  [20,  30,   "rgba(212,135,15,0.10)",  "rgba(212,135,15,0.30)", "C　20〜30万円"],
+  [10,  20,   "rgba(196,74,32,0.10)",   "rgba(196,74,32,0.30)",  "D　10〜20万円"],
+  [0,   10,   "rgba(130,130,130,0.10)", "rgba(130,130,130,0.28)","E　10万円以下"],
+];
+
+const stores = [
+  {n:"イトーヨーカドー　加古川",c:"（株）イトーヨーカ堂",r:"S",l:"商業施設内",d:"強",m:145.2},
+  {n:"イトーヨーカドー　明石",c:"（株）イトーヨーカ堂",r:"S",l:"ロードサイド",d:"強",m:115.4},
+  {n:"北野エース　垂水",c:"（株）エース　西日本",r:"D",l:"駅前",d:"強",m:9.7},
+  {n:"北野エース　西明石",c:"（株）エース　西日本",r:"E",l:"駅前",d:"強",m:6.2},
+  {n:"北野エース　大丸須磨",c:"（株）エース　西日本",r:"D",l:"商業施設内",d:"強",m:19.1},
+  {n:"食品館アプロ　新長田店",c:"（株）カノー",r:"D",l:"商業施設内",d:"強",m:13.3},
+  {n:"グルメシティ　小束山",c:"（株）ダイエー",r:"C",l:"ロードサイド",d:"中",m:24.1},
+  {n:"グルメシティ　西明石",c:"（株）ダイエー",r:"C",l:"駅前",d:"中",m:26.0},
+  {n:"ダイエー　イオンフードスタイル玉津店",c:"（株）ダイエー",r:"D",l:"ロードサイド",d:"中",m:22.9},
+  {n:"ダイエー　神戸学園",c:"（株）ダイエー",r:"B",l:"駅前",d:"中",m:49.3},
+  {n:"ダイエー　西神中央",c:"（株）ダイエー",r:"A",l:"商業施設内",d:"中",m:97.9},
+  {n:"ダイエー　舞子",c:"（株）ダイエー",r:"D",l:"ロードサイド",d:"中",m:20.3},
+  {n:"ダイエー　名谷",c:"（株）ダイエー",r:"A",l:"商業施設内",d:"中",m:79.5},
+  {n:"MEGAドン・キホーテ　神戸学園都市",c:"（株）ドン・キホーテ",r:"D",l:"ロードサイド",d:"強",m:19.2},
+  {n:"ドン・キホーテ　加古川店",c:"（株）ドン・キホーテ",r:"E",l:"ロードサイド",d:"強",m:8.0},
+  {n:"ドン・キホーテ　神戸西店",c:"（株）ドン・キホーテ",r:"E",l:"ロードサイド",d:"強",m:8.4},
+  {n:"マックスバリュ　加西中野",c:"（株）フジ（ＭＶ西日本）",r:"D",l:"住宅地",d:"中",m:22.4},
+  {n:"マックスバリュ　井吹台",c:"（株）フジ（ＭＶ西日本）",r:"C",l:"ロードサイド",d:"中",m:36.9},
+  {n:"マックスバリュ　稲美",c:"（株）フジ（ＭＶ西日本）",r:"D",l:"ロードサイド",d:"中",m:18.3},
+  {n:"マックスバリュ　王子",c:"（株）フジ（ＭＶ西日本）",r:"B",l:"住宅地",d:"中",m:38.2},
+  {n:"マックスバリュ　加古川西",c:"（株）フジ（ＭＶ西日本）",r:"B",l:"ロードサイド",d:"中",m:51.9},
+  {n:"マックスバリュ　恵比寿",c:"（株）フジ（ＭＶ西日本）",r:"D",l:"住宅地",d:"中",m:18.4},
+  {n:"マックスバリュ　古坂",c:"（株）フジ（ＭＶ西日本）",r:"D",l:"住宅地",d:"中",m:13.4},
+  {n:"マックスバリュ　黒川",c:"（株）フジ（ＭＶ西日本）",r:"D",l:"住宅地",d:"中",m:12.4},
+  {n:"マックスバリュ　今福",c:"（株）フジ（ＭＶ西日本）",r:"D",l:"ロードサイド",d:"中",m:15.9},
+  {n:"マックスバリュ　三木北",c:"（株）フジ（ＭＶ西日本）",r:"B",l:"住宅地",d:"中",m:37.0},
+  {n:"マックスバリュ　社",c:"（株）フジ（ＭＶ西日本）",r:"C",l:"住宅地",d:"中",m:29.4},
+  {n:"マックスバリュ　水足",c:"（株）フジ（ＭＶ西日本）",r:"B",l:"住宅地",d:"中",m:35.7},
+  {n:"マックスバリュ　西明石南",c:"（株）フジ（ＭＶ西日本）",r:"A",l:"住宅地",d:"中",m:60.6},
+  {n:"マックスバリュ　西脇寺内",c:"（株）フジ（ＭＶ西日本）",r:"E",l:"郊外",d:"中",m:10.1},
+  {n:"マックスバリュ　西脇小坂",c:"（株）フジ（ＭＶ西日本）",r:"D",l:"郊外",d:"中",m:21.4},
+  {n:"マックスバリュ　石守",c:"（株）フジ（ＭＶ西日本）",r:"C",l:"郊外",d:"中",m:24.8},
+  {n:"マックスバリュ　大久保",c:"（株）フジ（ＭＶ西日本）",r:"C",l:"住宅地",d:"中",m:26.3},
+  {n:"マックスバリュ　大久保西",c:"（株）フジ（ＭＶ西日本）",r:"C",l:"ロードサイド",d:"中",m:31.4},
+  {n:"マックスバリュ　茶園場",c:"（株）フジ（ＭＶ西日本）",r:"D",l:"住宅地",d:"中",m:18.7},
+  {n:"マックスバリュ　中島",c:"（株）フジ（ＭＶ西日本）",r:"C",l:"住宅地",d:"中",m:18.8},
+  {n:"マックスバリュ　東加古川",c:"（株）フジ（ＭＶ西日本）",r:"B",l:"ロードサイド",d:"中",m:35.4},
+  {n:"マックスバリュ　東条",c:"（株）フジ（ＭＶ西日本）",r:"C",l:"郊外",d:"中",m:25.6},
+  {n:"マックスバリュ　姫路別所",c:"（株）フジ（ＭＶ西日本）",r:"B",l:"郊外",d:"中",m:38.4},
+  {n:"マックスバリュ　平岡",c:"（株）フジ（ＭＶ西日本）",r:"E",l:"住宅地",d:"中",m:11.4},
+  {n:"マックスバリュ　別所",c:"（株）フジ（ＭＶ西日本）",r:"D",l:"郊外",d:"中",m:21.3},
+  {n:"マックスバリュ　宝殿",c:"（株）フジ（ＭＶ西日本）",r:"A",l:"ロードサイド",d:"中",m:60.8},
+  {n:"マックスバリュ　北在家",c:"（株）フジ（ＭＶ西日本）",r:"C",l:"住宅地",d:"中",m:30.2},
+  {n:"マックスバリュ　野口",c:"（株）フジ（ＭＶ西日本）",r:"C",l:"住宅地",d:"中",m:27.9},
+  {n:"マックスバリュ　友沢",c:"（株）フジ（ＭＶ西日本）",r:"D",l:"住宅地",d:"中",m:12.0},
+  {n:"関西ロピア　加古川ヤマトヤシキ店",c:"（株）ロピア（関西）",r:"C",l:"商業施設内",d:"強",m:29.2},
+  {n:"関西ロピア　新長田",c:"（株）ロピア（関西）",r:"B",l:"商業施設内",d:"強",m:39.6},
+  {n:"関西ロピア　神戸岩岡",c:"（株）ロピア（関西）",r:"B",l:"ロードサイド",d:"強",m:52.6},
+  {n:"関西スーパー　名谷",c:"（株）関西スーパーマーケット",r:"B",l:"ロードサイド",d:"中",m:39.3},
+  {n:"スーパーマーケットコーヨー　兵庫",c:"（株）光洋",r:"B",l:"駅前",d:"中",m:48.1},
+  {n:"ピーコックストア　明舞",c:"（株）光洋",r:"C",l:"住宅地",d:"中",m:34.6},
+  {n:"マックスバリュ　須磨",c:"（株）光洋",r:"C",l:"駅前",d:"中",m:22.6},
+  {n:"光洋　星陵台",c:"（株）光洋",r:"C",l:"住宅地",d:"中",m:28.8},
+  {n:"光洋　長田南",c:"（株）光洋",r:"C",l:"ロードサイド",d:"中",m:25.8},
+  {n:"西友　新長田",c:"（株）西友",r:"D",l:"駅前",d:"中",m:21.3},
+  {n:"パントリー　西神",c:"（株）大近",r:"C",l:"駅前",d:"強",m:29.6},
+  {n:"パントリー　明石店",c:"（株）大近",r:"C",l:"駅前",d:"強",m:24.8},
+  {n:"Aコープ　かみ",c:"ＪＡ全農Ａコープ（近畿）",r:"D",l:"郊外",d:"強",m:13.7},
+  {n:"Aコープ　にしわき",c:"ＪＡ全農Ａコープ（近畿）",r:"C",l:"郊外",d:"強",m:25.2},
+  {n:"Aコープ　フーディーズいなみ",c:"ＪＡ全農Ａコープ（近畿）",r:"B",l:"住宅地",d:"強",m:43.7},
+  {n:"Aコープ　フーディーズ神野",c:"ＪＡ全農Ａコープ（近畿）",r:"B",l:"住宅地",d:"強",m:37.4},
+  {n:"Aコープ　江井ヶ島",c:"ＪＡ全農Ａコープ（近畿）",r:"B",l:"住宅地",d:"強",m:35.0},
+  {n:"Aコープ　滝野",c:"ＪＡ全農Ａコープ（近畿）",r:"D",l:"郊外",d:"強",m:16.4},
+  {n:"イオン　Umie",c:"イオンリテール（株）",r:"B",l:"商業施設内",d:"弱",m:52.5},
+  {n:"イオン　ジェームス山",c:"イオンリテール（株）",r:"B",l:"住宅地",d:"弱",m:60.2},
+  {n:"イオン　加古川",c:"イオンリテール（株）",r:"A",l:"ロードサイド",d:"弱",m:63.4},
+  {n:"イオン　加西北条",c:"イオンリテール（株）",r:"A",l:"商業施設内",d:"弱",m:75.1},
+  {n:"イオン　高砂",c:"イオンリテール（株）",r:"A",l:"住宅地",d:"弱",m:98.4},
+  {n:"イオン　三木",c:"イオンリテール（株）",r:"A",l:"住宅地",d:"弱",m:63.5},
+  {n:"イオン　三木青山",c:"イオンリテール（株）",r:"B",l:"住宅地",d:"弱",m:59.9},
+  {n:"イオン　社",c:"イオンリテール（株）",r:"A",l:"住宅地",d:"弱",m:58.0},
+  {n:"イオン　神戸南",c:"イオンリテール（株）",r:"A",l:"商業施設内",d:"弱",m:83.0},
+  {n:"イオン　垂水",c:"イオンリテール（株）",r:"A",l:"駅前",d:"弱",m:103.2},
+  {n:"イオン　土山",c:"イオンリテール（株）",r:"B",l:"ロードサイド",d:"弱",m:41.3},
+  {n:"イオン　明石",c:"イオンリテール（株）",r:"A",l:"商業施設内",d:"弱",m:122.0},
+  {n:"イズミヤ　神戸玉津",c:"イズミヤ・阪急オアシス（株）",r:"B",l:"住宅地",d:"中",m:43.7},
+  {n:"イズミヤ　西神戸",c:"イズミヤ・阪急オアシス（株）",r:"A",l:"住宅地",d:"中",m:71.5},
+  {n:"オーケーストア　垂水小束山",c:"オーケー（株）",r:"C",l:"ロードサイド",d:"弱",m:24.0},
+  {n:"ボンマルシェ社店",c:"銀ビル",r:"D",l:"住宅地",d:"強",m:25.6},
+  {n:"ボンマルシェ西新町店",c:"銀ビル",r:"D",l:"住宅地",d:"強",m:12.8},
+  {n:"銀ビル 加西店",c:"銀ビル",r:"E",l:"住宅地",d:"強",m:7.0},
+  {n:"銀ビル志方店",c:"銀ビル",r:"D",l:"郊外",d:"強",m:15.9},
+  {n:"山陽マルナカ伊川谷店",c:"山陽マルナカ",r:"D",l:"住宅地",d:"強",m:26.2},
+  {n:"山陽マルナカ加古川店",c:"山陽マルナカ",r:"B",l:"ロードサイド",d:"強",m:58.8},
+  {n:"山陽マルナカ玉津店",c:"山陽マルナカ",r:"B",l:"住宅地",d:"強",m:47.7},
+  {n:"山陽マルナカ水谷店",c:"山陽マルナカ",r:"D",l:"住宅地",d:"強",m:19.9},
+  {n:"コープ　稲美",c:"生活協同組合コープこうべ",r:"D",l:"住宅地",d:"中",m:18.9},
+  {n:"コープ　魚住",c:"生活協同組合コープこうべ",r:"D",l:"住宅地",d:"中",m:24.0},
+  {n:"コープ　高丸",c:"生活協同組合コープこうべ",r:"E",l:"住宅地",d:"中",m:11.3},
+  {n:"コープ　高砂",c:"生活協同組合コープこうべ",r:"C",l:"住宅地",d:"中",m:23.0},
+  {n:"コープ　桜が丘",c:"生活協同組合コープこうべ",r:"D",l:"住宅地",d:"中",m:21.2},
+  {n:"コープ　三木緑が丘",c:"生活協同組合コープこうべ",r:"B",l:"住宅地",d:"中",m:35.5},
+  {n:"コープ　志染",c:"生活協同組合コープこうべ",r:"D",l:"住宅地",d:"中",m:19.7},
+  {n:"コープ　新多聞",c:"生活協同組合コープこうべ",r:"C",l:"住宅地",d:"中",m:21.1},
+  {n:"コープ　神吉",c:"生活協同組合コープこうべ",r:"C",l:"住宅地",d:"中",m:31.2},
+  {n:"コープ　神陵台",c:"生活協同組合コープこうべ",r:"E",l:"住宅地",d:"中",m:11.6},
+  {n:"コープ　須磨",c:"生活協同組合コープこうべ",r:"D",l:"住宅地",d:"中",m:18.5},
+  {n:"コープ　垂水",c:"生活協同組合コープこうべ",r:"A",l:"駅前",d:"中",m:57.4},
+  {n:"コープ　西神",c:"生活協同組合コープこうべ",r:"B",l:"住宅地",d:"中",m:33.8},
+  {n:"コープ　西神南",c:"生活協同組合コープこうべ",r:"B",l:"商業施設内",d:"中",m:55.4},
+  {n:"コープ　西明石",c:"生活協同組合コープこうべ",r:"B",l:"住宅地",d:"中",m:34.0},
+  {n:"コープ　大久保",c:"生活協同組合コープこうべ",r:"C",l:"住宅地",d:"中",m:25.5},
+  {n:"コープ　大蔵谷",c:"生活協同組合コープこうべ",r:"C",l:"住宅地",d:"中",m:22.8},
+  {n:"コープ　朝霧",c:"生活協同組合コープこうべ",r:"D",l:"駅前",d:"中",m:17.6},
+  {n:"コープ　播磨",c:"生活協同組合コープこうべ",r:"D",l:"住宅地",d:"中",m:12.4},
+  {n:"コープ　福田",c:"生活協同組合コープこうべ",r:"D",l:"住宅地",d:"中",m:16.8},
+  {n:"コープ　兵庫",c:"生活協同組合コープこうべ",r:"E",l:"駅前",d:"中",m:11.0},
+  {n:"コープ　北須磨",c:"生活協同組合コープこうべ",r:"E",l:"住宅地",d:"中",m:6.5},
+  {n:"コープ　名谷",c:"生活協同組合コープこうべ",r:"E",l:"住宅地",d:"中",m:8.5},
+  {n:"コープデイズ　神戸西",c:"生活協同組合コープこうべ",r:"B",l:"住宅地",d:"中",m:39.0},
+  {n:"ヤマダストアー須磨離宮公園前店",c:"ヤマダストアー",r:"E",l:"商業施設内",d:"弱",m:5.7},
+  {n:"ヤマダストアー北野店",c:"ヤマダストアー",r:"D",l:"ロードサイド",d:"弱",m:12.4},
+  {n:"ヤマダストアー阿弥陀店",c:"ヤマダストアー",r:"E",l:"ロードサイド",d:"弱",m:7.4},
+  {n:"ヤマダストアー朝霧店",c:"ヤマダストアー",r:"E",l:"住宅地",d:"弱",m:4.8},
+];
+
+const DISC_IDX = { 強:0, 中:1, 弱:2 };
+const Y_MAX = 160;
+
+let activeLocs = new Set(Object.keys(LOC_CFG));
+let chainFilter = "";
+
+const svgEl = document.getElementById("chart-svg");
+const tipEl  = document.getElementById("tooltip");
+const detEl  = document.getElementById("detail-bar");
+
+function dims() {
+  const w = document.getElementById("chart-wrap");
+  return { W: w.clientWidth, H: w.clientHeight };
+}
+
+function draw() {
+  const { W, H } = dims();
+  const ML=72, MR=28, MT=18, MB=44;
+  const PW=W-ML-MR, PH=H-MT-MB;
+  const ns="http://www.w3.org/2000/svg";
+  svgEl.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  svgEl.innerHTML="";
+
+  const mk=(tag,a,t)=>{
+    const e=document.createElementNS(ns,tag);
+    Object.entries(a).forEach(([k,v])=>e.setAttribute(k,v));
+    if(t!=null)e.textContent=t; return e;
+  };
+  const cx=(d,j)=>ML+(DISC_IDX[d]+0.5)*(PW/3)+j;
+  const cy=(v)=>MT+PH-Math.min(v/Y_MAX,1)*PH;
+
+  // ── ゾーン帯（背景）──
+  ZONES.forEach(([lo,hi,fill,stroke,label])=>{
+    const y1=cy(hi), y2=cy(lo);
+    svgEl.appendChild(mk("rect",{x:ML,y:y1,width:PW,height:y2-y1,fill,rx:0}));
+    // 境界線
+    svgEl.appendChild(mk("line",{x1:ML,y1:y1,x2:W-MR,y2:y1,stroke,
+      "stroke-width":"0.8","stroke-dasharray":"4 3"}));
+    // ゾーンラベル（右端）
+    if(hi<=Y_MAX){
+      svgEl.appendChild(mk("text",{
+        x:W-MR-4,y:y1+11,fill:stroke.replace(/[\d.]+\)$/,"0.75)"),
+        "font-size":"10","text-anchor":"end",
+        "font-family":"'Noto Sans JP',sans-serif"
+      },label));
+    }
+  });
+
+  // ── グリッド横線 ──
+  [0,20,40,60,80,100,120,140,160].forEach(v=>{
+    const y=cy(v);
+    svgEl.appendChild(mk("line",{x1:ML,y1:y,x2:W-MR,y2:y,
+      stroke:"rgba(0,0,0,0.06)","stroke-width":"0.5"}));
+    svgEl.appendChild(mk("text",{x:ML-7,y,fill:"#a09f98","font-size":"11",
+      "text-anchor":"end","dominant-baseline":"central",
+      "font-family":"'DM Mono',monospace"},v));
+  });
+
+  // ── 縦区切り ──
+  ["強","中","弱"].forEach(d=>{
+    const x=ML+(DISC_IDX[d]+0.5)*(PW/3);
+    svgEl.appendChild(mk("line",{x1:x,y1:MT,x2:x,y2:H-MB,
+      stroke:"rgba(0,0,0,0.08)","stroke-width":"0.5"}));
+    svgEl.appendChild(mk("text",{x,y:H-MB+18,fill:"#6b6a64","font-size":"13",
+      "text-anchor":"middle","font-family":"'Noto Sans JP',sans-serif","font-weight":"500"},d));
+  });
+
+  svgEl.appendChild(mk("line",{x1:ML,y1:MT,x2:ML,y2:H-MB,stroke:"#c8c6be","stroke-width":"1"}));
+  svgEl.appendChild(mk("line",{x1:ML,y1:H-MB,x2:W-MR,y2:H-MB,stroke:"#c8c6be","stroke-width":"1"}));
+
+  svgEl.appendChild(mk("text",{x:14,y:(MT+H-MB)/2,fill:"#6b6a64","font-size":"11",
+    "text-anchor":"middle","font-family":"'Noto Sans JP',sans-serif",
+    transform:`rotate(-90,14,${(MT+H-MB)/2})`},"月平均金額（万円）"));
+
+  // ── ドット ──
+  const buckets={強:[],中:[],弱:[]};
+  stores.forEach(s=>buckets[s.d].push(s));
+
+  Object.entries(buckets).forEach(([d,list])=>{
+    list.forEach((s,i)=>{
+      const p=LOC_CFG[s.l];
+      const total=list.length;
+      const spread=Math.min(PW/3*0.72,(total-1)*7);
+      const jitter=total>1?-spread/2+(i/(total-1))*spread:0;
+      const vis=activeLocs.has(s.l)&&(!chainFilter||s.c===chainFilter);
+      const x=cx(d,jitter), y=cy(s.m);
+
+      const c=document.createElementNS(ns,"circle");
+      c.setAttribute("class","dot");
+      c.setAttribute("cx",x); c.setAttribute("cy",y); c.setAttribute("r","7");
+      c.setAttribute("fill",p.color);
+      c.setAttribute("stroke","#fff"); c.setAttribute("stroke-width","1.5");
+      c.setAttribute("opacity",vis?"0.88":"0.05");
+
+      c.addEventListener("mouseenter",()=>{
+        if(!vis)return;
+        tipEl.style.display="block";
+        tipEl.innerHTML=`
+          <div class="tip-name">${s.n}</div>
+          <div class="tip-chain">${s.c}</div>
+          <div class="tip-row"><span class="tip-key">売上ランク</span><span class="tip-val">${s.r}</span></div>
+          <div class="tip-row"><span class="tip-key">裁量</span><span class="tip-val">${s.d}</span></div>
+          <div class="tip-row"><span class="tip-key">月平均金額</span><span class="tip-val">${s.m.toFixed(1)} 万円</span></div>
+          <span class="loc-pill" style="background:${p.bg};color:${p.tc};">${s.l}</span>`;
+      });
+      c.addEventListener("mousemove",e=>{
+        const tx=e.clientX;
+        tipEl.style.left=(tx>window.innerWidth-240?tx-220:tx+16)+"px";
+        tipEl.style.top=(e.clientY-10)+"px";
+      });
+      c.addEventListener("mouseleave",()=>tipEl.style.display="none");
+      c.addEventListener("click",()=>{
+        if(!vis)return;
+        detEl.style.display="block";
+        detEl.innerHTML=`<strong>${s.n}</strong>　<span style="color:var(--text-secondary)">${s.c}</span>　ランク：<strong>${s.r}</strong>　裁量：<strong>${s.d}</strong>　月平均：<strong style="font-family:'DM Mono',monospace">${s.m.toFixed(1)}万円</strong>　<span class="loc-pill" style="background:${p.bg};color:${p.tc};padding:2px 8px;border-radius:20px;font-size:11px;">${s.l}</span>`;
+      });
+      svgEl.appendChild(c);
+    });
+  });
+
+  updateStats();
+}
+
+function updateStats(){
+  const vis=stores.filter(s=>activeLocs.has(s.l)&&(!chainFilter||s.c===chainFilter));
+  document.getElementById("stat-count").innerHTML=`${vis.length}<span class="stat-unit">店</span>`;
+  const sum=vis.reduce((a,s)=>a+s.m,0);
+  document.getElementById("stat-sum").innerHTML=`${Math.round(sum).toLocaleString()}<span class="stat-unit">万円</span>`;
+  document.getElementById("count-badge").textContent=`${vis.length}店舗`;
+}
+
+// サイドバー：立地ボタン
+const locWrap=document.getElementById("loc-btns");
+Object.entries(LOC_CFG).forEach(([name,p])=>{
+  const cnt=stores.filter(s=>s.l===name).length;
+  const btn=document.createElement("button");
+  btn.className="loc-btn";
+  btn.innerHTML=`<span class="loc-dot" style="background:${p.color}"></span>${name}<span class="loc-count">${cnt}</span>`;
+  btn.addEventListener("click",()=>{
+    if(activeLocs.has(name)){activeLocs.delete(name);btn.classList.add("off");}
+    else{activeLocs.add(name);btn.classList.remove("off");}
+    draw();
+  });
+  locWrap.appendChild(btn);
+});
+
+// サイドバー：チェーン
+const chainSel=document.getElementById("chain-sel");
+[...new Set(stores.map(s=>s.c))].sort().forEach(c=>{
+  const o=document.createElement("option");o.value=c;o.textContent=c;chainSel.appendChild(o);
+});
+chainSel.addEventListener("change",()=>{chainFilter=chainSel.value;draw();});
+
+let timer;
+window.addEventListener("resize",()=>{clearTimeout(timer);timer=setTimeout(draw,60);});
+draw();
+</script>
+</body>
+</html>

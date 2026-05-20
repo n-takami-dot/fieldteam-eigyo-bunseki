@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STP分析 — 店舗分類表</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
+:root {
+  --bg: #f7f6f2;
+  --surface: #ffffff;
+  --border: rgba(0,0,0,0.08);
+  --text-primary: #1a1a18;
+  --text-secondary: #6b6a64;
+  --text-muted: #a09f98;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 40px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.logo {
+  width: 30px; height: 30px;
+  background: #3c3489;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 13px; font-weight: 700;
+}
+.header-title { font-size: 14px; font-weight: 700; }
+.back-link {
+  margin-left: auto;
+  font-size: 12px; color: var(--text-muted);
+  text-decoration: none;
+}
+.back-link:hover { color: var(--text-primary); }
+
+/* ── Layout ── */
+main {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 24px 64px;
+}
+.page-title { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+.page-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 36px; }
+
+/* ── Section ── */
+.section { margin-bottom: 36px; }
+.sec-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.sec-pill {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 50%;
+  font-size: 13px; font-weight: 700; flex-shrink: 0;
+}
+.sec-title { font-size: 18px; font-weight: 700; }
+.sec-sub { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+.divider { height: 1px; background: var(--border); margin: 8px 0 32px; }
+
+/* ── Seg cards ── */
+.seg-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.seg-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+}
+.seg-card.purple { border-left: 3px solid #7f77dd; }
+.seg-card.teal   { border-left: 3px solid #1d9e75; }
+.seg-card.amber  { border-left: 3px solid #ef9f27; }
+.seg-card.gray   { border-left: 3px solid #a09f98; }
+.seg-name { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+.seg-meta { font-size: 12px; color: var(--text-secondary); line-height: 1.8; }
+.seg-meta b { font-weight: 500; color: var(--text-primary); }
+
+/* ── Bar chart ── */
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+.chart-label-row { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 14px; letter-spacing: .06em; }
+.bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
+.bar-label { font-size: 12px; color: var(--text-secondary); min-width: 72px; text-align: right; }
+.bar-track { flex: 1; background: #f0ede4; border-radius: 4px; height: 22px; overflow: hidden; }
+.bar-fill {
+  height: 100%; border-radius: 4px;
+  display: flex; align-items: center; padding-left: 8px;
+  font-size: 11px; font-weight: 500;
+}
+
+/* ── Target tiers ── */
+.target-tier {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+.tier-badge {
+  min-width: 42px; height: 42px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; flex-shrink: 0;
+}
+.tier-title { font-size: 13px; font-weight: 700; margin-bottom: 5px; }
+.tier-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.7; }
+
+/* ── Positioning matrix ── */
+.pos-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.pos-q {
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+.pos-q-title { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+.pos-q-body { font-size: 12px; color: var(--text-secondary); line-height: 1.7; }
+.pos-q-body b { font-weight: 500; color: var(--text-primary); }
+
+/* ── Insight card ── */
+.insight-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+.insight-label { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 14px; letter-spacing: .06em; }
+.insight-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.insight-row:last-child { border-bottom: none; padding-bottom: 0; }
+.insight-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+.insight-text { font-size: 13px; color: var(--text-primary); line-height: 1.7; }
+.insight-text b { font-weight: 700; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">分</div>
+  <div class="header-title">STP分析 — 店舗分類表</div>
+  <a class="back-link" href="index.html">← 一覧に戻る</a>
+</header>
+
+<main>
+  <div class="page-title">STP分析</div>
+  <div class="page-sub">107店舗 / 前年実績 約4.6億円　　売上ランク × 立地 × 裁量の3軸で整理</div>
+
+  <!-- S -->
+  <div class="section">
+    <div class="sec-header">
+      <span class="sec-pill" style="background:#EEEDFE;color:#3C3489;">S</span>
+      <div>
+        <div class="sec-title">Segmentation　セグメンテーション</div>
+        <div class="sec-sub">市場を4軸で分類 — 売上規模 × 立地 × 裁量 × チェーン特性</div>
+      </div>
+    </div>
+
+    <div class="seg-grid">
+      <div class="seg-card purple">
+        <div class="seg-name">① 高売上・商業施設型（S/Aランク）</div>
+        <div class="seg-meta">
+          <b>16店舗 / 売上合計 約1.6億円</b><br>
+          イオン・イトーヨーカ堂・ダイエー西神中央など<br>
+          商業施設内または大型ロードサイド<br>
+          裁量：弱〜中が多い（本部主導）
+        </div>
+      </div>
+      <div class="seg-card teal">
+        <div class="seg-name">② 中堅・住宅地密着型（Bランク）</div>
+        <div class="seg-meta">
+          <b>27店舗 / 売上合計 約1.4億円</b><br>
+          コープこうべ・マックスバリュ・山陽マルナカなど<br>
+          住宅地・ロードサイドに集中<br>
+          裁量：強〜中（店舗独自性あり）
+        </div>
+      </div>
+      <div class="seg-card amber">
+        <div class="seg-name">③ 中規模・多様立地型（Cランク）</div>
+        <div class="seg-meta">
+          <b>30店舗 / 売上合計 約0.7億円</b><br>
+          コープこうべ（住宅地多数）・マックスバリュ<br>
+          住宅地・郊外・駅前など幅広い立地<br>
+          裁量：中が主体
+        </div>
+      </div>
+      <div class="seg-card gray">
+        <div class="seg-name">④ 小規模・郊外・駅前型（D/Eランク）</div>
+        <div class="seg-meta">
+          <b>41店舗 / 売上合計 約0.8億円</b><br>
+          Aコープ・ヤマダストアー・ドン・キホーテなど<br>
+          郊外・駅前・住宅地に散在<br>
+          裁量：強が多い（個店交渉が必要）
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-label-row">売上ランク別 構成比（前年実績ベース）</div>
+      <div class="bar-row"><span class="bar-label">S（2店）</span><div class="bar-track"><div class="bar-fill" style="width:6.8%;background:#AFA9EC;color:#26215C;">6.8%</div></div></div>
+      <div class="bar-row"><span class="bar-label">A（14店）</span><div class="bar-track"><div class="bar-fill" style="width:28.7%;background:#85B7EB;color:#042C53;">28.7%</div></div></div>
+      <div class="bar-row"><span class="bar-label">B（27店）</span><div class="bar-track"><div class="bar-fill" style="width:30.0%;background:#97C459;color:#173404;">30.0%</div></div></div>
+      <div class="bar-row"><span class="bar-label">C（30店）</span><div class="bar-track"><div class="bar-fill" style="width:16.3%;background:#EF9F27;color:#412402;">16.3%</div></div></div>
+      <div class="bar-row"><span class="bar-label">D（33店）</span><div class="bar-track"><div class="bar-fill" style="width:15.1%;background:#F0997B;color:#4A1B0C;">15.1%</div></div></div>
+      <div class="bar-row"><span class="bar-label">E（14店）</span><div class="bar-track"><div class="bar-fill" style="width:3.1%;background:#F09595;color:#501313;">3.1%</div></div></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- T -->
+  <div class="section">
+    <div class="sec-header">
+      <span class="sec-pill" style="background:#E1F5EE;color:#085041;">T</span>
+      <div>
+        <div class="sec-title">Targeting　ターゲティング</div>
+        <div class="sec-sub">注力すべきセグメントの優先順位</div>
+      </div>
+    </div>
+
+    <div class="target-tier">
+      <div class="tier-badge" style="background:#AFA9EC;color:#3C3489;">1位</div>
+      <div>
+        <div class="tier-title">最優先：A/Sランク × 商業施設内・ロードサイド（裁量：弱〜中）</div>
+        <div class="tier-desc">16店舗で売上の約35%を占める主力セグメント。1店舗あたり平均売上約1,000万円超。イオン・イトーヨーカ堂など大手チェーンで本部決裁型のため、チェーン本部との関係強化が売上最大化の鍵。</div>
+      </div>
+    </div>
+    <div class="target-tier">
+      <div class="tier-badge" style="background:#97C459;color:#27500A;">2位</div>
+      <div>
+        <div class="tier-title">重点育成：Bランク × 住宅地・ロードサイド（裁量：強）</div>
+        <div class="tier-desc">27店舗で売上の30%。コープこうべ・マックスバリュ・山陽マルナカなど地域密着型チェーンが中心。店舗裁量が強いため個店ごとの提案力が売上に直結。育成余地が大きい。</div>
+      </div>
+    </div>
+    <div class="target-tier">
+      <div class="tier-badge" style="background:#EF9F27;color:#633806;">3位</div>
+      <div>
+        <div class="tier-title">効率維持：Cランク × 住宅地（裁量：中）</div>
+        <div class="tier-desc">30店舗と最多だが1店舗あたり売上は平均約325万円。コープこうべ住宅地店舗が大半。ルートの効率化とアイテム提案の標準化で維持コストを最小化しつつ底上げを図る。</div>
+      </div>
+    </div>
+    <div class="target-tier">
+      <div class="tier-badge" style="background:#F0997B;color:#712B13;">4位</div>
+      <div>
+        <div class="tier-title">選択的対応：D/Eランク × 郊外・駅前（裁量：強）</div>
+        <div class="tier-desc">41店舗と数は多いが売上合計は全体の18%。訪問頻度・提案リソースの見直しが必要。ただし裁量が強い店舗には個店提案で売上拡大の余地がある（Aコープ・銀ビルなど）。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- P -->
+  <div class="section">
+    <div class="sec-header">
+      <span class="sec-pill" style="background:#FAEEDA;color:#633806;">P</span>
+      <div>
+        <div class="sec-title">Positioning　ポジショニング</div>
+        <div class="sec-sub">裁量 × 売上ランクの2軸で当社の立ち位置を整理</div>
+      </div>
+    </div>
+
+    <div class="pos-grid">
+      <div class="pos-q" style="background:#EEEDFE33;">
+        <div class="pos-q-title" style="color:#3C3489;">高ランク × 裁量：強</div>
+        <div class="pos-q-body"><b>戦略的パートナー</b><br>ロピア・山陽マルナカ・Aコープ上位店など。売上規模が大きく、かつ店舗担当者との個別関係が成果に直結。深耕提案・独自棚割の提案が有効。</div>
+      </div>
+      <div class="pos-q" style="background:#E6F1FB33;">
+        <div class="pos-q-title" style="color:#0C447C;">高ランク × 裁量：弱</div>
+        <div class="pos-q-body"><b>本部折衝型</b><br>イオン・イトーヨーカ堂・ダイエー名谷など。チェーン本部との定期商談が最重要。売場提案よりも販促企画・定番確保が優先事項。</div>
+      </div>
+      <div class="pos-q" style="background:#EAF3DE33;">
+        <div class="pos-q-title" style="color:#27500A;">低ランク × 裁量：強</div>
+        <div class="pos-q-body"><b>個店育成型</b><br>Aコープ郊外店・銀ビル・ドン・キホーテなど。提案が受け入れられやすい反面、売上規模が小さいため投資対効果の見極めが必要。</div>
+      </div>
+      <div class="pos-q" style="background:#FAEEDA33;">
+        <div class="pos-q-title" style="color:#633806;">低ランク × 裁量：弱</div>
+        <div class="pos-q-body"><b>効率維持型</b><br>ヤマダストアー・オーケー・西友など。提案余地・売上規模ともに限定的。訪問頻度の最適化とデジタル対応（受発注効率化）が現実的な対応策。</div>
+      </div>
+    </div>
+
+    <div class="insight-card">
+      <div class="insight-label">戦略サマリー</div>
+      <div class="insight-row">
+        <div class="insight-dot" style="background:#1D9E75;"></div>
+        <div class="insight-text"><b>売上集中：</b>S+Aランク16店舗が全体売上の約35%を担う。最優先で関係維持・本部折衝を強化。</div>
+      </div>
+      <div class="insight-row">
+        <div class="insight-dot" style="background:#EF9F27;"></div>
+        <div class="insight-text"><b>成長余地：</b>Bランク（裁量：強）は個店提案でアップセルが期待できる。担当者スキル向上とツール整備が有効。</div>
+      </div>
+      <div class="insight-row">
+        <div class="insight-dot" style="background:#7F77DD;"></div>
+        <div class="insight-text"><b>効率化：</b>D/Eランク41店舗は訪問頻度・提案コストを見直し、浮いたリソースをA/Bランクへ集中投下。</div>
+      </div>
+      <div class="insight-row">
+        <div class="insight-dot" style="background:#85B7EB;"></div>
+        <div class="insight-text"><b>立地対応：</b>住宅地（39店）は生活需要に合わせた定番提案。商業施設内（17店）は集客イベント連動の販促提案が効果的。</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+</body>
+</html>
