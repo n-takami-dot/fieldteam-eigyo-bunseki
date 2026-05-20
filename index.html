@@ -3,6 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="favicon.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="営業分析">
+<meta name="theme-color" content="#ffffff">
 <title>営業分析ダッシュボード</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@500&display=swap');
@@ -174,20 +180,48 @@ footer {
 <body>
 
 <header>
-  <div class="logo">分</div>
+  <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- store building -->
+  <rect x="3" y="16" width="18" height="14" rx="1" fill="#e8e8e8"/>
+  <rect x="3" y="12" width="18" height="5" rx="1" fill="#e53935"/>
+  <rect x="3" y="10" width="18" height="3" rx="1" fill="#c62828"/>
+  <rect x="7" y="20" width="5" height="10" rx="0.5" fill="#90caf9"/>
+  <rect x="14" y="20" width="5" height="6" rx="0.5" fill="#90caf9"/>
+  <!-- magnifier circle -->
+  <circle cx="22" cy="14" r="9" fill="white" fill-opacity="0.92"/>
+  <circle cx="22" cy="14" r="9" stroke="#424242" stroke-width="2.2" fill="none"/>
+  <!-- bar chart inside -->
+  <rect x="16" y="17" width="2" height="3" rx="0.3" fill="#e53935" opacity="0.5"/>
+  <rect x="19" y="15" width="2" height="5" rx="0.3" fill="#e53935" opacity="0.75"/>
+  <rect x="22" y="13" width="2" height="7" rx="0.3" fill="#e53935"/>
+  <!-- pie slice -->
+  <path d="M26 11 A3 3 0 0 1 29 14 L26 14 Z" fill="#e53935"/>
+  <path d="M26 14 A3 3 0 0 1 23.5 16.6 L26 14 Z" fill="#ef9a9a"/>
+  <path d="M26 14 A3 3 0 1 1 26 11 L26 14 Z" fill="#ffcdd2" stroke="white" stroke-width="0.3"/>
+  <!-- handle -->
+  <line x1="28.5" y1="20.5" x2="31.5" y2="23.5" stroke="#424242" stroke-width="2.2" stroke-linecap="round"/>
+</svg>
   <div class="header-title">営業分析ダッシュボード</div>
   <div class="header-date" id="today"></div>
 </header>
 
 <main>
   <div class="page-title">分析レポート一覧</div>
-  <div class="page-sub">ファイルをクリックすると別タブで開きます。同じフォルダに全ファイルを置いてください。</div>
+  <div class="page-sub">ファイルをクリックすると別タブで開きます。</div>
 
   <div class="section-label">STP 分析</div>
   <div class="cards">
 
     <a class="card" href="stp_analysis.html" target="_blank">
-      <div class="card-icon" style="background:#EEEDFE;">📊</div>
+      <div class="card-icon" style="background:#EEEDFE;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="12" width="3" height="9" rx="1" fill="#7F77DD" opacity="0.5"/>
+        <rect x="8" y="8" width="3" height="13" rx="1" fill="#7F77DD" opacity="0.75"/>
+        <rect x="13" y="4" width="3" height="17" rx="1" fill="#7F77DD"/>
+        <circle cx="18" cy="8" r="3.5" fill="none" stroke="#7F77DD" stroke-width="1.5"/>
+        <path d="M18 6.5v1.5l1 1" stroke="#7F77DD" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+    </div>
       <div class="card-title">STP分析</div>
       <div class="card-desc">
         店舗分類表をもとにセグメンテーション・ターゲティング・ポジショニングを整理。売上ランク別構成比や4象限ポジションマップを含む。
@@ -203,7 +237,18 @@ footer {
   <div class="section-label">店舗散布図</div>
   <div class="cards">
     <a class="card" href="store_scatter_monthly.html" target="_blank">
-      <div class="card-icon" style="background:#FAEEDA;">📈</div>
+      <div class="card-icon" style="background:#FAEEDA;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <circle cx="6" cy="17" r="2" fill="#EF9F27" opacity="0.5"/>
+        <circle cx="10" cy="13" r="2" fill="#EF9F27" opacity="0.65"/>
+        <circle cx="14" cy="15" r="2" fill="#EF9F27" opacity="0.8"/>
+        <circle cx="18" cy="8" r="2" fill="#EF9F27"/>
+        <circle cx="9" cy="8" r="1.5" fill="#EF9F27" opacity="0.4"/>
+        <circle cx="16" cy="12" r="1.5" fill="#EF9F27" opacity="0.6"/>
+        <line x1="3" y1="20" x2="21" y2="20" stroke="#EF9F27" stroke-width="1.2" opacity="0.4" stroke-linecap="round"/>
+        <line x1="3" y1="4" x2="3" y2="20" stroke="#EF9F27" stroke-width="1.2" opacity="0.4" stroke-linecap="round"/>
+      </svg>
+    </div>
       <div class="card-title">店舗散布図（月平均金額）</div>
       <div class="card-desc">
         縦軸：月平均金額（万円）／横軸：店舗裁量／色：立地条件。114店舗対応・更新版データ使用。S〜Eランクゾーン帯で背景色分け。
@@ -222,12 +267,12 @@ footer {
     <div class="step-list">
       <div class="step">
         <div class="step-num">1</div>
-        <div><b>全ファイルを同じフォルダに置く</b><br>
-        index.html・stp_analysis.html・store_scatter_desktop.html・store_scatter_monthly.html の4つを同じフォルダにまとめる。</div>
+        <div><b>GitHubにファイルをアップロードする</b><br>
+        新しいファイルを追加するときは、GitHubリポジトリの「Add file」→「Upload files」からアップロードするだけ。</div>
       </div>
       <div class="step">
         <div class="step-num">2</div>
-        <div><b>index.html をブラウザのブックマークに登録</b><br>
+        <div><b>このページをブックマークに登録</b><br>
         ⌘D（Mac）または Ctrl+D（Windows）でブックマークに追加しておくと、次回からすぐ開ける。</div>
       </div>
       <div class="step">
@@ -237,8 +282,8 @@ footer {
       </div>
       <div class="step">
         <div class="step-num">4</div>
-        <div><b>ファイルを追加するときは</b><br>
-        新しいHTMLファイルを同じフォルダに置き、index.html のカード部分にコピーして追加するだけ。</div>
+        <div><b>カードを追加するときは</b><br>
+        新しいHTMLファイルをGitHubにアップロードし、Claudeにカードの追加を依頼するだけ。</div>
       </div>
     </div>
   </div>
