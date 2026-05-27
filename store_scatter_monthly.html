@@ -43,17 +43,33 @@ header{
 .stat-lbl{font-size:10px;color:var(--muted);margin-bottom:2px;}
 .stat-val{font-size:18px;font-weight:700;font-family:'DM Mono',monospace;line-height:1;}
 .stat-unit{font-size:10px;font-weight:400;color:var(--sub);margin-left:2px;}
-.loc-btn{display:flex;align-items:center;gap:8px;width:100%;padding:5px 8px;
-  border-radius:6px;border:none;background:none;cursor:pointer;
+
+/* ===== FILTER TABS ===== */
+.filter-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:10px;}
+.ftab{flex:1;padding:5px 4px;font-size:10px;font-weight:700;letter-spacing:.05em;
+  border:none;background:none;cursor:pointer;color:var(--muted);
+  font-family:'Noto Sans JP',sans-serif;border-bottom:2px solid transparent;
+  transition:color .12s,border-color .12s;white-space:nowrap;}
+.ftab.active{color:var(--text);border-bottom:2px solid var(--text);}
+.ftab-panel{display:none;}
+.ftab-panel.active{display:block;}
+
+/* ===== FILTER BUTTONS ===== */
+.filter-btn{display:flex;align-items:center;gap:8px;width:100%;padding:5px 8px;
+  border-radius:6px;border:1px solid transparent;background:none;cursor:pointer;
   font-size:12px;font-family:'Noto Sans JP',sans-serif;color:var(--text);
-  transition:background .12s;margin-bottom:2px;}
-.loc-btn:hover{background:#f0ede4;}
-.loc-btn.off{opacity:.3;}
-.loc-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
-.loc-cnt{margin-left:auto;font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);}
-.chain-sel{width:100%;padding:6px 8px;border-radius:6px;border:1px solid var(--border);
-  background:#f7f6f2;font-size:12px;font-family:'Noto Sans JP',sans-serif;
-  color:var(--text);appearance:none;cursor:pointer;}
+  transition:background .12s,border-color .12s;margin-bottom:2px;text-align:left;}
+.filter-btn:hover{background:#f0ede4;}
+.filter-btn.active{background:#f0ede4;border-color:var(--border);}
+.filter-btn.active::before{content:'✓';font-size:10px;color:var(--text);margin-right:2px;flex-shrink:0;}
+.filter-btn:not(.active)::before{content:'';display:inline-block;width:14px;flex-shrink:0;}
+.f-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.f-cnt{margin-left:auto;font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);}
+
+/* チェーン・担当者スクロールエリア */
+.scroll-list{max-height:200px;overflow-y:auto;}
+
+/* 凡例 */
 .zone-row{display:flex;align-items:center;gap:7px;margin-bottom:4px;font-size:11px;color:var(--sub);}
 .zone-sw{width:12px;height:12px;border-radius:3px;flex-shrink:0;}
 
@@ -76,7 +92,7 @@ header{
   position:fixed;background:var(--surface);border:1px solid var(--border);
   border-radius:10px;padding:10px 13px;font-size:12px;line-height:1.7;
   pointer-events:none;display:none;z-index:200;
-  box-shadow:0 4px 20px rgba(0,0,0,.12);min-width:190px;max-width:240px;
+  box-shadow:0 4px 20px rgba(0,0,0,.12);min-width:200px;max-width:260px;
 }
 .tip-name{font-size:13px;font-weight:700;margin-bottom:2px;}
 .tip-chain{color:var(--sub);margin-bottom:5px;font-size:11px;}
@@ -85,6 +101,8 @@ header{
 .tip-val{font-weight:500;font-family:'DM Mono',monospace;}
 .loc-pill{display:inline-block;padding:2px 8px;border-radius:20px;
   font-size:11px;font-weight:500;margin-top:4px;}
+.pri-pill{display:inline-block;padding:2px 8px;border-radius:20px;
+  font-size:10px;font-weight:500;margin-top:2px;margin-left:4px;}
 .dot{cursor:pointer;transition:opacity .12s;}
 .dot:hover{opacity:1!important;}
 
@@ -118,7 +136,6 @@ header{
   .chart-area{padding:6px 8px 6px;}
   #detail-bar{font-size:11px;padding:5px 10px;margin-top:4px;}
 
-  /* フィルターボタン */
   #mob-filter-btn{
     display:flex;align-items:center;gap:6px;
     background:var(--surface);border:1px solid var(--border);
@@ -129,11 +146,19 @@ header{
   #mob-filter-panel{
     background:var(--surface);border:1px solid var(--border);
     border-radius:8px;padding:8px 10px;margin-bottom:5px;flex-shrink:0;
-    flex-wrap:wrap;gap:5px;align-items:center;
+    flex-direction:column;gap:6px;
   }
   #mob-filter-panel.open{display:flex;}
-  #mob-filter-panel .loc-btn{padding:3px 7px;font-size:11px;}
-  #mob-filter-panel .chain-sel{font-size:11px;padding:3px 6px;width:auto;flex:1;min-width:120px;}
+  .mob-filter-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:6px;}
+  .mob-ftab{flex:1;padding:4px 2px;font-size:10px;font-weight:700;
+    border:none;background:none;cursor:pointer;color:var(--muted);
+    font-family:'Noto Sans JP',sans-serif;border-bottom:2px solid transparent;
+    white-space:nowrap;}
+  .mob-ftab.active{color:var(--text);border-bottom:2px solid var(--text);}
+  .mob-ftab-panel{display:none;flex-wrap:wrap;gap:4px;}
+  .mob-ftab-panel.active{display:flex;}
+  .mob-ftab-panel .filter-btn{padding:3px 7px;font-size:11px;width:auto;}
+  .mob-ftab-panel .scroll-list{max-height:80px;}
 }
 </style>
 </head>
@@ -182,24 +207,38 @@ header{
       <div class="zone-row"><div class="zone-sw" style="background:rgba(196,74,32,0.3);border:1px solid rgba(196,74,32,0.5);"></div>D　10〜20万円</div>
       <div class="zone-row"><div class="zone-sw" style="background:rgba(130,130,130,0.25);border:1px solid rgba(130,130,130,0.4);"></div>E　10万円以下</div>
     </div>
+
+    <!-- PC フィルタータブ -->
     <div>
-      <div class="sec-lbl">立地条件</div>
-      <div id="loc-btns-pc"></div>
-    </div>
-    <div>
-      <div class="sec-lbl">チェーン</div>
-      <select class="chain-sel" id="chain-pc"><option value="">すべて</option></select>
+      <div class="sec-lbl">フィルター</div>
+      <div class="filter-tabs" id="pc-tabs">
+        <button class="ftab active" data-tab="pc-tab-pri">優先度</button>
+        <button class="ftab" data-tab="pc-tab-loc">立地</button>
+        <button class="ftab" data-tab="pc-tab-staff">担当者</button>
+        <button class="ftab" data-tab="pc-tab-chain">チェーン</button>
+      </div>
+      <div id="pc-tab-pri" class="ftab-panel active" data-panel></div>
+      <div id="pc-tab-loc" class="ftab-panel" data-panel></div>
+      <div id="pc-tab-staff" class="ftab-panel scroll-list" data-panel></div>
+      <div id="pc-tab-chain" class="ftab-panel scroll-list" data-panel></div>
     </div>
   </aside>
 
   <!-- チャートエリア -->
   <div class="chart-area">
-
     <!-- モバイル横向き用フィルター -->
     <button id="mob-filter-btn" onclick="toggleMobFilter()">⚙ フィルター</button>
     <div id="mob-filter-panel">
-      <div id="loc-btns-mob" style="display:flex;flex-wrap:wrap;gap:4px;"></div>
-      <select class="chain-sel" id="chain-mob"><option value="">すべて</option></select>
+      <div class="mob-filter-tabs" id="mob-tabs">
+        <button class="mob-ftab active" data-tab="mob-tab-pri">優先度</button>
+        <button class="mob-ftab" data-tab="mob-tab-loc">立地</button>
+        <button class="mob-ftab" data-tab="mob-tab-staff">担当者</button>
+        <button class="mob-ftab" data-tab="mob-tab-chain">チェーン</button>
+      </div>
+      <div id="mob-tab-pri" class="mob-ftab-panel active" data-panel></div>
+      <div id="mob-tab-loc" class="mob-ftab-panel" data-panel></div>
+      <div id="mob-tab-staff" class="mob-ftab-panel scroll-list" data-panel></div>
+      <div id="mob-tab-chain" class="mob-ftab-panel scroll-list" data-panel></div>
     </div>
 
     <div class="chart-wrap" id="chart-wrap">
@@ -212,12 +251,1273 @@ header{
 <div class="tip" id="tooltip"></div>
 
 <script>
+const stores = [
+  {
+    "n": "イトーヨーカドー　加古川",
+    "c": "（株）イトーヨーカ堂",
+    "r": "S",
+    "l": "商業施設内",
+    "d": "強",
+    "p": "第1優先",
+    "a": "大石 佐輝子",
+    "pair": "〇",
+    "m": 145.2
+  },
+  {
+    "n": "イトーヨーカドー　明石",
+    "c": "（株）イトーヨーカ堂",
+    "r": "S",
+    "l": "ロードサイド",
+    "d": "強",
+    "p": "第1優先",
+    "a": "三木 敬子",
+    "pair": "",
+    "m": 115.4
+  },
+  {
+    "n": "北野エース　垂水",
+    "c": "（株）エース　西日本",
+    "r": "D",
+    "l": "駅前",
+    "d": "強",
+    "p": "第3優先",
+    "a": "垂井 明美",
+    "pair": "",
+    "m": 9.7
+  },
+  {
+    "n": "北野エース　西明石",
+    "c": "（株）エース　西日本",
+    "r": "E",
+    "l": "駅前",
+    "d": "強",
+    "p": "第3優先",
+    "a": "垂井 明美",
+    "pair": "",
+    "m": 6.2
+  },
+  {
+    "n": "北野エース　大丸須磨",
+    "c": "（株）エース　西日本",
+    "r": "D",
+    "l": "商業施設内",
+    "d": "強",
+    "p": "第3優先",
+    "a": "垂井 明美",
+    "pair": "",
+    "m": 19.1
+  },
+  {
+    "n": "食品館アプロ　新長田店",
+    "c": "（株）カノー",
+    "r": "D",
+    "l": "商業施設内",
+    "d": "強",
+    "p": "第3優先",
+    "a": "馬込 和也",
+    "pair": "〇",
+    "m": 13.3
+  },
+  {
+    "n": "グルメシティ　小束山",
+    "c": "（株）ダイエー",
+    "r": "C",
+    "l": "ロードサイド",
+    "d": "中",
+    "p": "第2優先",
+    "a": "垂井 明美",
+    "pair": "",
+    "m": 24.1
+  },
+  {
+    "n": "グルメシティ　西明石",
+    "c": "（株）ダイエー",
+    "r": "C",
+    "l": "駅前",
+    "d": "中",
+    "p": "第2優先",
+    "a": "松尾 奈緒美",
+    "pair": "",
+    "m": 26.0
+  },
+  {
+    "n": "ダイエー　イオンフードスタイル玉津店",
+    "c": "（株）ダイエー",
+    "r": "D",
+    "l": "ロードサイド",
+    "d": "中",
+    "p": "第3優先",
+    "a": "三木 敬子",
+    "pair": "",
+    "m": 22.9
+  },
+  {
+    "n": "ダイエー　神戸学園",
+    "c": "（株）ダイエー",
+    "r": "B",
+    "l": "駅前",
+    "d": "中",
+    "p": "第2優先",
+    "a": "垂井 明美",
+    "pair": "",
+    "m": 49.3
+  },
+  {
+    "n": "ダイエー　西神中央",
+    "c": "（株）ダイエー",
+    "r": "A",
+    "l": "商業施設内",
+    "d": "中",
+    "p": "第1優先",
+    "a": "三木 敬子",
+    "pair": "〇",
+    "m": 97.9
+  },
+  {
+    "n": "ダイエー　舞子",
+    "c": "（株）ダイエー",
+    "r": "D",
+    "l": "ロードサイド",
+    "d": "中",
+    "p": "第3優先",
+    "a": "垂井 明美",
+    "pair": "",
+    "m": 20.3
+  },
+  {
+    "n": "ダイエー　名谷",
+    "c": "（株）ダイエー",
+    "r": "A",
+    "l": "商業施設内",
+    "d": "中",
+    "p": "第1優先",
+    "a": "垂井 明美",
+    "pair": "〇",
+    "m": 79.5
+  },
+  {
+    "n": "ＭＥＧＡドン・キホーテ　神戸学園都市",
+    "c": "（株）ドン・キホーテ",
+    "r": "D",
+    "l": "ロードサイド",
+    "d": "強",
+    "p": "第3優先",
+    "a": "垂井 明美",
+    "pair": "",
+    "m": 19.2
+  },
+  {
+    "n": "ドン・キホーテ　加古川店",
+    "c": "（株）ドン・キホーテ",
+    "r": "E",
+    "l": "ロードサイド",
+    "d": "強",
+    "p": "第3優先",
+    "a": "大石 佐輝子",
+    "pair": "",
+    "m": 8.0
+  },
+  {
+    "n": "ドン・キホーテ　神戸西店",
+    "c": "（株）ドン・キホーテ",
+    "r": "E",
+    "l": "ロードサイド",
+    "d": "強",
+    "p": "第3優先",
+    "a": "三木 敬子",
+    "pair": "",
+    "m": 8.4
+  },
+  {
+    "n": "マックスバリュ　マックスバリュ　加西中野",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "D",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第3優先",
+    "a": "増田 直美",
+    "pair": "",
+    "m": 22.4
+  },
+  {
+    "n": "マックスバリュ　井吹台",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "C",
+    "l": "ロードサイド",
+    "d": "中",
+    "p": "第2優先",
+    "a": "三木 敬子",
+    "pair": "〇",
+    "m": 36.9
+  },
+  {
+    "n": "マックスバリュ　稲美",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "D",
+    "l": "ロードサイド",
+    "d": "中",
+    "p": "第3優先",
+    "a": "三木 敬子",
+    "pair": "",
+    "m": 18.3
+  },
+  {
+    "n": "マックスバリュ　王子",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "B",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第2優先",
+    "a": "増田 直美",
+    "pair": "〇",
+    "m": 38.2
+  },
+  {
+    "n": "マックスバリュ　加古川西",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "B",
+    "l": "ロードサイド",
+    "d": "中",
+    "p": "第2優先",
+    "a": "大石 佐輝子",
+    "pair": "〇",
+    "m": 51.9
+  },
+  {
+    "n": "マックスバリュ　恵比寿",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "D",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第3優先",
+    "a": "増田 直美",
+    "pair": "",
+    "m": 18.4
+  },
+  {
+    "n": "マックスバリュ　古坂",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "D",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第3優先",
+    "a": "増田 直美",
+    "pair": "",
+    "m": 13.4
+  },
+  {
+    "n": "マックスバリュ　黒川",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "D",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第3優先",
+    "a": "増田 直美",
+    "pair": "",
+    "m": 12.4
+  },
+  {
+    "n": "マックスバリュ　今福",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "D",
+    "l": "ロードサイド",
+    "d": "中",
+    "p": "第3優先",
+    "a": "大石 佐輝子",
+    "pair": "",
+    "m": 15.9
+  },
+  {
+    "n": "マックスバリュ　三木北",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "B",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第2優先",
+    "a": "増田 直美",
+    "pair": "",
+    "m": 37.0
+  },
+  {
+    "n": "マックスバリュ　社",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "C",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第2優先",
+    "a": "増田 直美",
+    "pair": "",
+    "m": 29.4
+  },
+  {
+    "n": "マックスバリュ　水足",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "B",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第2優先",
+    "a": "大石 佐輝子",
+    "pair": "",
+    "m": 35.7
+  },
+  {
+    "n": "マックスバリュ　西明石南",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "A",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第1優先",
+    "a": "松尾 奈緒美",
+    "pair": "",
+    "m": 60.6
+  },
+  {
+    "n": "マックスバリュ　西脇寺内",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "E",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第3優先",
+    "a": "増田 直美",
+    "pair": "",
+    "m": 10.1
+  },
+  {
+    "n": "マックスバリュ　西脇小坂",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "D",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第3優先",
+    "a": "増田 直美",
+    "pair": "",
+    "m": 21.4
+  },
+  {
+    "n": "マックスバリュ　石守",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "C",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第2優先",
+    "a": "大石 佐輝子",
+    "pair": "",
+    "m": 24.8
+  },
+  {
+    "n": "マックスバリュ　大久保",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "C",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第2優先",
+    "a": "松尾 奈緒美",
+    "pair": "",
+    "m": 26.3
+  },
+  {
+    "n": "マックスバリュ　大久保西",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "C",
+    "l": "ロードサイド",
+    "d": "中",
+    "p": "第2優先",
+    "a": "松尾 奈緒美",
+    "pair": "〇",
+    "m": 31.4
+  },
+  {
+    "n": "マックスバリュ　茶園場",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "D",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第3優先",
+    "a": "垂井 明美",
+    "pair": "",
+    "m": 18.7
+  },
+  {
+    "n": "マックスバリュ　中島",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "C",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第2優先",
+    "a": "大石 佐輝子",
+    "pair": "",
+    "m": 18.8
+  },
+  {
+    "n": "マックスバリュ　東加古川",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "B",
+    "l": "ロードサイド",
+    "d": "中",
+    "p": "第2優先",
+    "a": "大石 佐輝子",
+    "pair": "",
+    "m": 35.4
+  },
+  {
+    "n": "マックスバリュ　東条",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "C",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第2優先",
+    "a": "増田 直美",
+    "pair": "",
+    "m": 25.6
+  },
+  {
+    "n": "マックスバリュ　姫路別所",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "B",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第2優先",
+    "a": "大石 佐輝子",
+    "pair": "",
+    "m": 38.4
+  },
+  {
+    "n": "マックスバリュ　平岡",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "E",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第3優先",
+    "a": "大石 佐輝子",
+    "pair": "",
+    "m": 11.4
+  },
+  {
+    "n": "マックスバリュ　別所",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "D",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第3優先",
+    "a": "増田 直美",
+    "pair": "",
+    "m": 21.3
+  },
+  {
+    "n": "マックスバリュ　宝殿",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "A",
+    "l": "ロードサイド",
+    "d": "中",
+    "p": "第1優先",
+    "a": "大石 佐輝子",
+    "pair": "",
+    "m": 60.8
+  },
+  {
+    "n": "マックスバリュ　北在家",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "C",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第2優先",
+    "a": "大石 佐輝子",
+    "pair": "〇",
+    "m": 30.2
+  },
+  {
+    "n": "マックスバリュ　野口",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "C",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第2優先",
+    "a": "大石 佐輝子",
+    "pair": "",
+    "m": 27.9
+  },
+  {
+    "n": "マックスバリュ　友沢",
+    "c": "（株）フジ（ＭＶ西日本）",
+    "r": "D",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第3優先",
+    "a": "大石 佐輝子",
+    "pair": "",
+    "m": 12.0
+  },
+  {
+    "n": "関西ロピア　ロピア加古川ヤマトヤシキ店",
+    "c": "（株）ロピア（関西）",
+    "r": "C",
+    "l": "商業施設内",
+    "d": "強",
+    "p": "第1優先",
+    "a": "大石 佐輝子",
+    "pair": "",
+    "m": 29.2
+  },
+  {
+    "n": "関西ロピア　新長田",
+    "c": "（株）ロピア（関西）",
+    "r": "B",
+    "l": "商業施設内",
+    "d": "強",
+    "p": "第1優先",
+    "a": "馬込 和也",
+    "pair": "〇",
+    "m": 39.6
+  },
+  {
+    "n": "関西ロピア　神戸岩岡",
+    "c": "（株）ロピア（関西）",
+    "r": "B",
+    "l": "ロードサイド",
+    "d": "強",
+    "p": "第1優先",
+    "a": "三木 敬子",
+    "pair": "〇",
+    "m": 52.6
+  },
+  {
+    "n": "関西スーパー　名谷",
+    "c": "（株）関西スーパーマーケット",
+    "r": "B",
+    "l": "ロードサイド",
+    "d": "中",
+    "p": "第2優先",
+    "a": "馬込 和也",
+    "pair": "",
+    "m": 39.3
+  },
+  {
+    "n": "スーパーマーケットコーヨー　兵庫",
+    "c": "（株）光洋",
+    "r": "B",
+    "l": "駅前",
+    "d": "中",
+    "p": "第2優先",
+    "a": "馬込 和也",
+    "pair": "〇",
+    "m": 48.1
+  },
+  {
+    "n": "ピーコックストア　明舞",
+    "c": "（株）光洋",
+    "r": "C",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第2優先",
+    "a": "垂井 明美",
+    "pair": "",
+    "m": 34.6
+  },
+  {
+    "n": "マックスバリュ　須磨",
+    "c": "（株）光洋",
+    "r": "C",
+    "l": "駅前",
+    "d": "中",
+    "p": "第2優先",
+    "a": "馬込 和也",
+    "pair": "",
+    "m": 22.6
+  },
+  {
+    "n": "光洋　星陵台",
+    "c": "（株）光洋",
+    "r": "C",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第2優先",
+    "a": "垂井 明美",
+    "pair": "",
+    "m": 28.8
+  },
+  {
+    "n": "光洋　長田南",
+    "c": "（株）光洋",
+    "r": "C",
+    "l": "ロードサイド",
+    "d": "中",
+    "p": "第2優先",
+    "a": "馬込 和也",
+    "pair": "",
+    "m": 25.8
+  },
+  {
+    "n": "西友　新長田",
+    "c": "（株）西友",
+    "r": "D",
+    "l": "駅前",
+    "d": "中",
+    "p": "第3優先",
+    "a": "馬込 和也",
+    "pair": "",
+    "m": 21.3
+  },
+  {
+    "n": "パントリー　西神",
+    "c": "（株）大近",
+    "r": "C",
+    "l": "駅前",
+    "d": "強",
+    "p": "第1優先",
+    "a": "三木 敬子",
+    "pair": "",
+    "m": 29.6
+  },
+  {
+    "n": "パントリー　明石店",
+    "c": "（株）大近",
+    "r": "C",
+    "l": "駅前",
+    "d": "強",
+    "p": "第1優先",
+    "a": "垂井 明美",
+    "pair": "〇",
+    "m": 24.8
+  },
+  {
+    "n": "Ａコープ　かみ",
+    "c": "ＪＡ全農Ａコープ（近畿）",
+    "r": "D",
+    "l": "住宅地",
+    "d": "強",
+    "p": "第3優先",
+    "a": "増田 直美",
+    "pair": "",
+    "m": 13.7
+  },
+  {
+    "n": "Ａコープ　にしわき",
+    "c": "ＪＡ全農Ａコープ（近畿）",
+    "r": "C",
+    "l": "住宅地",
+    "d": "強",
+    "p": "第1優先",
+    "a": "増田 直美",
+    "pair": "",
+    "m": 25.2
+  },
+  {
+    "n": "Ａコープ　フーディーズいなみ",
+    "c": "ＪＡ全農Ａコープ（近畿）",
+    "r": "B",
+    "l": "住宅地",
+    "d": "強",
+    "p": "第1優先",
+    "a": "三木 敬子",
+    "pair": "〇",
+    "m": 43.7
+  },
+  {
+    "n": "Ａコープ　フーディーズ神野",
+    "c": "ＪＡ全農Ａコープ（近畿）",
+    "r": "B",
+    "l": "住宅地",
+    "d": "強",
+    "p": "第1優先",
+    "a": "大石 佐輝子",
+    "pair": "",
+    "m": 37.4
+  },
+  {
+    "n": "Ａコープ　江井ヶ島",
+    "c": "ＪＡ全農Ａコープ（近畿）",
+    "r": "B",
+    "l": "住宅地",
+    "d": "強",
+    "p": "第1優先",
+    "a": "松尾 奈緒美",
+    "pair": "",
+    "m": 35.0
+  },
+  {
+    "n": "Ａコープ　滝野",
+    "c": "ＪＡ全農Ａコープ（近畿）",
+    "r": "D",
+    "l": "住宅地",
+    "d": "強",
+    "p": "第3優先",
+    "a": "増田 直美",
+    "pair": "",
+    "m": 16.4
+  },
+  {
+    "n": "イオン　Ｕｍｉｅ",
+    "c": "イオンリテール（株）",
+    "r": "B",
+    "l": "商業施設内",
+    "d": "弱",
+    "p": "第3優先",
+    "a": "馬込 和也",
+    "pair": "",
+    "m": 52.5
+  },
+  {
+    "n": "イオン　ジェームス山",
+    "c": "イオンリテール（株）",
+    "r": "B",
+    "l": "住宅地",
+    "d": "弱",
+    "p": "第3優先",
+    "a": "垂井 明美",
+    "pair": "〇",
+    "m": 60.2
+  },
+  {
+    "n": "イオン　加古川",
+    "c": "イオンリテール（株）",
+    "r": "A",
+    "l": "ロードサイド",
+    "d": "弱",
+    "p": "第3優先",
+    "a": "大石 佐輝子",
+    "pair": "〇",
+    "m": 63.4
+  },
+  {
+    "n": "イオン　加西北条",
+    "c": "イオンリテール（株）",
+    "r": "A",
+    "l": "商業施設内",
+    "d": "弱",
+    "p": "第3優先",
+    "a": "増田 直美",
+    "pair": "〇",
+    "m": 75.1
+  },
+  {
+    "n": "イオン　高砂",
+    "c": "イオンリテール（株）",
+    "r": "A",
+    "l": "住宅地",
+    "d": "弱",
+    "p": "第3優先",
+    "a": "大石 佐輝子",
+    "pair": "〇",
+    "m": 98.4
+  },
+  {
+    "n": "イオン　三木",
+    "c": "イオンリテール（株）",
+    "r": "A",
+    "l": "住宅地",
+    "d": "弱",
+    "p": "第3優先",
+    "a": "増田 直美",
+    "pair": "〇",
+    "m": 63.5
+  },
+  {
+    "n": "イオン　三木青山",
+    "c": "イオンリテール（株）",
+    "r": "B",
+    "l": "住宅地",
+    "d": "弱",
+    "p": "第3優先",
+    "a": "増田 直美",
+    "pair": "",
+    "m": 59.9
+  },
+  {
+    "n": "イオン　社",
+    "c": "イオンリテール（株）",
+    "r": "A",
+    "l": "住宅地",
+    "d": "弱",
+    "p": "第3優先",
+    "a": "増田 直美",
+    "pair": "〇",
+    "m": 58.0
+  },
+  {
+    "n": "イオン　神戸南",
+    "c": "イオンリテール（株）",
+    "r": "A",
+    "l": "商業施設内",
+    "d": "弱",
+    "p": "第3優先",
+    "a": "馬込 和也",
+    "pair": "〇",
+    "m": 83.0
+  },
+  {
+    "n": "イオン　垂水",
+    "c": "イオンリテール（株）",
+    "r": "A",
+    "l": "駅前",
+    "d": "弱",
+    "p": "第3優先",
+    "a": "垂井 明美",
+    "pair": "〇",
+    "m": 103.2
+  },
+  {
+    "n": "イオン　土山",
+    "c": "イオンリテール（株）",
+    "r": "B",
+    "l": "ロードサイド",
+    "d": "弱",
+    "p": "第3優先",
+    "a": "松尾 奈緒美",
+    "pair": "",
+    "m": 41.3
+  },
+  {
+    "n": "イオン　明石",
+    "c": "イオンリテール（株）",
+    "r": "A",
+    "l": "商業施設内",
+    "d": "弱",
+    "p": "第3優先",
+    "a": "松尾 奈緒美",
+    "pair": "〇",
+    "m": 122.0
+  },
+  {
+    "n": "イズミヤ　神戸玉津",
+    "c": "イズミヤ・阪急オアシス（株）（阪急オアシス）",
+    "r": "B",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第2優先",
+    "a": "垂井 明美",
+    "pair": "",
+    "m": 43.7
+  },
+  {
+    "n": "イズミヤ　西神戸",
+    "c": "イズミヤ・阪急オアシス（株）（阪急オアシス）",
+    "r": "A",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第1優先",
+    "a": "三木 敬子",
+    "pair": "",
+    "m": 71.5
+  },
+  {
+    "n": "オーケーストア　垂水小束山",
+    "c": "オーケー（株）",
+    "r": "C",
+    "l": "ロードサイド",
+    "d": "弱",
+    "p": "第3優先",
+    "a": "垂井 明美",
+    "pair": "",
+    "m": 24.0
+  },
+  {
+    "n": "ボンマルシェ社店",
+    "c": "銀ビル",
+    "r": "D",
+    "l": "住宅地",
+    "d": "強",
+    "p": "第3優先",
+    "a": "増田 直美",
+    "pair": "〇",
+    "m": 25.6
+  },
+  {
+    "n": "ボンマルシェ西新町店",
+    "c": "銀ビル",
+    "r": "D",
+    "l": "住宅地",
+    "d": "強",
+    "p": "第3優先",
+    "a": "垂井 明美",
+    "pair": "",
+    "m": 12.8
+  },
+  {
+    "n": "銀ビル 加西店",
+    "c": "銀ビル",
+    "r": "E",
+    "l": "住宅地",
+    "d": "強",
+    "p": "第3優先",
+    "a": "増田 直美",
+    "pair": "",
+    "m": 7.0
+  },
+  {
+    "n": "銀ビル志方店",
+    "c": "銀ビル",
+    "r": "D",
+    "l": "住宅地",
+    "d": "強",
+    "p": "第3優先",
+    "a": "大石 佐輝子",
+    "pair": "",
+    "m": 15.9
+  },
+  {
+    "n": "山陽マルナカ伊川谷店",
+    "c": "山陽マルナカ",
+    "r": "D",
+    "l": "住宅地",
+    "d": "強",
+    "p": "第3優先",
+    "a": "垂井 明美",
+    "pair": "",
+    "m": 26.2
+  },
+  {
+    "n": "山陽マルナカ加古川店",
+    "c": "山陽マルナカ",
+    "r": "B",
+    "l": "ロードサイド",
+    "d": "強",
+    "p": "第1優先",
+    "a": "大石 佐輝子",
+    "pair": "",
+    "m": 58.8
+  },
+  {
+    "n": "山陽マルナカ玉津店",
+    "c": "山陽マルナカ",
+    "r": "B",
+    "l": "住宅地",
+    "d": "強",
+    "p": "第1優先",
+    "a": "三木 敬子",
+    "pair": "",
+    "m": 47.7
+  },
+  {
+    "n": "山陽マルナカ水谷店",
+    "c": "山陽マルナカ",
+    "r": "D",
+    "l": "住宅地",
+    "d": "強",
+    "p": "第3優先",
+    "a": "三木 敬子",
+    "pair": "",
+    "m": 19.9
+  },
+  {
+    "n": "コープ　稲美",
+    "c": "生活協同組合コープこうべ",
+    "r": "D",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第3優先",
+    "a": "三木 敬子",
+    "pair": "",
+    "m": 18.9
+  },
+  {
+    "n": "コープ　魚住",
+    "c": "生活協同組合コープこうべ",
+    "r": "D",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第3優先",
+    "a": "松尾 奈緒美",
+    "pair": "",
+    "m": 24.0
+  },
+  {
+    "n": "コープ　高丸",
+    "c": "生活協同組合コープこうべ",
+    "r": "E",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第3優先",
+    "a": "垂井 明美",
+    "pair": "",
+    "m": 11.3
+  },
+  {
+    "n": "コープ　高砂",
+    "c": "生活協同組合コープこうべ",
+    "r": "C",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第2優先",
+    "a": "大石 佐輝子",
+    "pair": "",
+    "m": 23.0
+  },
+  {
+    "n": "コープ　桜が丘",
+    "c": "生活協同組合コープこうべ",
+    "r": "D",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第3優先",
+    "a": "三木 敬子",
+    "pair": "",
+    "m": 21.2
+  },
+  {
+    "n": "コープ　三木緑が丘",
+    "c": "生活協同組合コープこうべ",
+    "r": "B",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第2優先",
+    "a": "増田 直美",
+    "pair": "",
+    "m": 35.5
+  },
+  {
+    "n": "コープ　志染",
+    "c": "生活協同組合コープこうべ",
+    "r": "D",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第3優先",
+    "a": "増田 直美",
+    "pair": "",
+    "m": 19.7
+  },
+  {
+    "n": "コープ　新多聞",
+    "c": "生活協同組合コープこうべ",
+    "r": "C",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第2優先",
+    "a": "垂井 明美",
+    "pair": "",
+    "m": 21.1
+  },
+  {
+    "n": "コープ　神吉",
+    "c": "生活協同組合コープこうべ",
+    "r": "C",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第2優先",
+    "a": "大石 佐輝子",
+    "pair": "",
+    "m": 31.2
+  },
+  {
+    "n": "コープ　神陵台",
+    "c": "生活協同組合コープこうべ",
+    "r": "E",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第3優先",
+    "a": "垂井 明美",
+    "pair": "",
+    "m": 11.6
+  },
+  {
+    "n": "コープ　須磨",
+    "c": "生活協同組合コープこうべ",
+    "r": "D",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第3優先",
+    "a": "馬込 和也",
+    "pair": "",
+    "m": 18.5
+  },
+  {
+    "n": "コープ　垂水",
+    "c": "生活協同組合コープこうべ",
+    "r": "A",
+    "l": "駅前",
+    "d": "中",
+    "p": "第1優先",
+    "a": "垂井 明美",
+    "pair": "",
+    "m": 57.4
+  },
+  {
+    "n": "コープ　西神",
+    "c": "生活協同組合コープこうべ",
+    "r": "B",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第2優先",
+    "a": "三木 敬子",
+    "pair": "",
+    "m": 33.8
+  },
+  {
+    "n": "コープ　西神南",
+    "c": "生活協同組合コープこうべ",
+    "r": "B",
+    "l": "商業施設内",
+    "d": "中",
+    "p": "第2優先",
+    "a": "三木 敬子",
+    "pair": "〇",
+    "m": 55.4
+  },
+  {
+    "n": "コープ　西明石",
+    "c": "生活協同組合コープこうべ",
+    "r": "B",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第2優先",
+    "a": "松尾 奈緒美",
+    "pair": "〇",
+    "m": 34.0
+  },
+  {
+    "n": "コープ　大久保",
+    "c": "生活協同組合コープこうべ",
+    "r": "C",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第2優先",
+    "a": "松尾 奈緒美",
+    "pair": "",
+    "m": 25.5
+  },
+  {
+    "n": "コープ　大蔵谷",
+    "c": "生活協同組合コープこうべ",
+    "r": "C",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第2優先",
+    "a": "垂井 明美",
+    "pair": "",
+    "m": 22.8
+  },
+  {
+    "n": "コープ　朝霧",
+    "c": "生活協同組合コープこうべ",
+    "r": "D",
+    "l": "駅前",
+    "d": "中",
+    "p": "第3優先",
+    "a": "垂井 明美",
+    "pair": "",
+    "m": 17.6
+  },
+  {
+    "n": "コープ　播磨",
+    "c": "生活協同組合コープこうべ",
+    "r": "D",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第3優先",
+    "a": "三木 敬子",
+    "pair": "",
+    "m": 12.4
+  },
+  {
+    "n": "コープ　福田",
+    "c": "生活協同組合コープこうべ",
+    "r": "D",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第3優先",
+    "a": "垂井 明美",
+    "pair": "",
+    "m": 16.8
+  },
+  {
+    "n": "コープ　兵庫",
+    "c": "生活協同組合コープこうべ",
+    "r": "E",
+    "l": "駅前",
+    "d": "中",
+    "p": "第3優先",
+    "a": "馬込 和也",
+    "pair": "",
+    "m": 11.0
+  },
+  {
+    "n": "コープ　北須磨",
+    "c": "生活協同組合コープこうべ",
+    "r": "E",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第3優先",
+    "a": "垂井 明美",
+    "pair": "",
+    "m": 6.5
+  },
+  {
+    "n": "コープ　名谷",
+    "c": "生活協同組合コープこうべ",
+    "r": "E",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第3優先",
+    "a": "垂井 明美",
+    "pair": "",
+    "m": 8.5
+  },
+  {
+    "n": "コープデイズ　神戸西",
+    "c": "生活協同組合コープこうべ",
+    "r": "B",
+    "l": "住宅地",
+    "d": "中",
+    "p": "第2優先",
+    "a": "垂井 明美",
+    "pair": "〇",
+    "m": 39.0
+  },
+  {
+    "n": "ヤマダストアー須磨離宮公園前店",
+    "c": "ヤマダストアー",
+    "r": "E",
+    "l": "商業施設内",
+    "d": "弱",
+    "p": "第3優先",
+    "a": "馬込 和也",
+    "pair": "",
+    "m": 5.7
+  },
+  {
+    "n": "ヤマダストアー北野店",
+    "c": "ヤマダストアー",
+    "r": "D",
+    "l": "ロードサイド",
+    "d": "弱",
+    "p": "第3優先",
+    "a": "大石 佐輝子",
+    "pair": "",
+    "m": 12.4
+  },
+  {
+    "n": "ヤマダストアー阿弥陀店",
+    "c": "ヤマダストアー",
+    "r": "E",
+    "l": "ロードサイド",
+    "d": "弱",
+    "p": "第3優先",
+    "a": "大石 佐輝子",
+    "pair": "",
+    "m": 7.4
+  },
+  {
+    "n": "ヤマダストアー朝霧店",
+    "c": "ヤマダストアー",
+    "r": "E",
+    "l": "住宅地",
+    "d": "弱",
+    "p": "第3優先",
+    "a": "馬込 和也",
+    "pair": "",
+    "m": 4.8
+  }
+];
+
 const LOC_CFG = {
   "商業施設内": {color:"#6c63d4",bg:"#eeedfe",tc:"#3c3489"},
   "ロードサイド":{color:"#1a9968",bg:"#e1f5ee",tc:"#085041"},
   "住宅地":      {color:"#2b7fd4",bg:"#e6f1fb",tc:"#0c447c"},
   "駅前":        {color:"#d4870f",bg:"#faeeda",tc:"#633806"},
-  "郊外":        {color:"#c44a20",bg:"#faece7",tc:"#712b13"},
+};
+const PRI_CFG = {
+  "第1優先": {bg:"#fef0f0",tc:"#b81c1c",dot:"#e53935"},
+  "第2優先": {bg:"#fff8e1",tc:"#a06000",dot:"#f9a825"},
+  "第3優先": {bg:"#f1f8e9",tc:"#387027",dot:"#7cb342"},
 };
 const ZONES = [
   [100,160,"rgba(108,99,212,0.10)","rgba(108,99,212,0.35)","S　100万円以上"],
@@ -227,138 +1527,34 @@ const ZONES = [
   [10, 20, "rgba(196,74,32,0.10)", "rgba(196,74,32,0.35)", "D　10〜20万円"],
   [0,  10, "rgba(130,130,130,0.10)","rgba(130,130,130,0.3)","E　10万円以下"],
 ];
-const stores = [
-  {n:"イトーヨーカドー　加古川",c:"（株）イトーヨーカ堂",r:"S",l:"商業施設内",d:"強",m:145.2},
-  {n:"イトーヨーカドー　明石",c:"（株）イトーヨーカ堂",r:"S",l:"ロードサイド",d:"強",m:115.4},
-  {n:"北野エース　垂水",c:"（株）エース　西日本",r:"D",l:"駅前",d:"強",m:9.7},
-  {n:"北野エース　西明石",c:"（株）エース　西日本",r:"E",l:"駅前",d:"強",m:6.2},
-  {n:"北野エース　大丸須磨",c:"（株）エース　西日本",r:"D",l:"商業施設内",d:"強",m:19.1},
-  {n:"食品館アプロ　新長田店",c:"（株）カノー",r:"D",l:"商業施設内",d:"強",m:13.3},
-  {n:"グルメシティ　小束山",c:"（株）ダイエー",r:"C",l:"ロードサイド",d:"中",m:24.1},
-  {n:"グルメシティ　西明石",c:"（株）ダイエー",r:"C",l:"駅前",d:"中",m:26.0},
-  {n:"ダイエー　イオンフードスタイル玉津店",c:"（株）ダイエー",r:"D",l:"ロードサイド",d:"中",m:22.9},
-  {n:"ダイエー　神戸学園",c:"（株）ダイエー",r:"B",l:"駅前",d:"中",m:49.3},
-  {n:"ダイエー　西神中央",c:"（株）ダイエー",r:"A",l:"商業施設内",d:"中",m:97.9},
-  {n:"ダイエー　舞子",c:"（株）ダイエー",r:"D",l:"ロードサイド",d:"中",m:20.3},
-  {n:"ダイエー　名谷",c:"（株）ダイエー",r:"A",l:"商業施設内",d:"中",m:79.5},
-  {n:"MEGAドン・キホーテ　神戸学園都市",c:"（株）ドン・キホーテ",r:"D",l:"ロードサイド",d:"強",m:19.2},
-  {n:"ドン・キホーテ　加古川店",c:"（株）ドン・キホーテ",r:"E",l:"ロードサイド",d:"強",m:8.0},
-  {n:"ドン・キホーテ　神戸西店",c:"（株）ドン・キホーテ",r:"E",l:"ロードサイド",d:"強",m:8.4},
-  {n:"マックスバリュ　加西中野",c:"（株）フジ（ＭＶ西日本）",r:"D",l:"住宅地",d:"中",m:22.4},
-  {n:"マックスバリュ　井吹台",c:"（株）フジ（ＭＶ西日本）",r:"C",l:"ロードサイド",d:"中",m:36.9},
-  {n:"マックスバリュ　稲美",c:"（株）フジ（ＭＶ西日本）",r:"D",l:"ロードサイド",d:"中",m:18.3},
-  {n:"マックスバリュ　王子",c:"（株）フジ（ＭＶ西日本）",r:"B",l:"住宅地",d:"中",m:38.2},
-  {n:"マックスバリュ　加古川西",c:"（株）フジ（ＭＶ西日本）",r:"B",l:"ロードサイド",d:"中",m:51.9},
-  {n:"マックスバリュ　恵比寿",c:"（株）フジ（ＭＶ西日本）",r:"D",l:"住宅地",d:"中",m:18.4},
-  {n:"マックスバリュ　古坂",c:"（株）フジ（ＭＶ西日本）",r:"D",l:"住宅地",d:"中",m:13.4},
-  {n:"マックスバリュ　黒川",c:"（株）フジ（ＭＶ西日本）",r:"D",l:"住宅地",d:"中",m:12.4},
-  {n:"マックスバリュ　今福",c:"（株）フジ（ＭＶ西日本）",r:"D",l:"ロードサイド",d:"中",m:15.9},
-  {n:"マックスバリュ　三木北",c:"（株）フジ（ＭＶ西日本）",r:"B",l:"住宅地",d:"中",m:37.0},
-  {n:"マックスバリュ　社",c:"（株）フジ（ＭＶ西日本）",r:"C",l:"住宅地",d:"中",m:29.4},
-  {n:"マックスバリュ　水足",c:"（株）フジ（ＭＶ西日本）",r:"B",l:"住宅地",d:"中",m:35.7},
-  {n:"マックスバリュ　西明石南",c:"（株）フジ（ＭＶ西日本）",r:"A",l:"住宅地",d:"中",m:60.6},
-  {n:"マックスバリュ　西脇寺内",c:"（株）フジ（ＭＶ西日本）",r:"E",l:"郊外",d:"中",m:10.1},
-  {n:"マックスバリュ　西脇小坂",c:"（株）フジ（ＭＶ西日本）",r:"D",l:"郊外",d:"中",m:21.4},
-  {n:"マックスバリュ　石守",c:"（株）フジ（ＭＶ西日本）",r:"C",l:"郊外",d:"中",m:24.8},
-  {n:"マックスバリュ　大久保",c:"（株）フジ（ＭＶ西日本）",r:"C",l:"住宅地",d:"中",m:26.3},
-  {n:"マックスバリュ　大久保西",c:"（株）フジ（ＭＶ西日本）",r:"C",l:"ロードサイド",d:"中",m:31.4},
-  {n:"マックスバリュ　茶園場",c:"（株）フジ（ＭＶ西日本）",r:"D",l:"住宅地",d:"中",m:18.7},
-  {n:"マックスバリュ　中島",c:"（株）フジ（ＭＶ西日本）",r:"C",l:"住宅地",d:"中",m:18.8},
-  {n:"マックスバリュ　東加古川",c:"（株）フジ（ＭＶ西日本）",r:"B",l:"ロードサイド",d:"中",m:35.4},
-  {n:"マックスバリュ　東条",c:"（株）フジ（ＭＶ西日本）",r:"C",l:"郊外",d:"中",m:25.6},
-  {n:"マックスバリュ　姫路別所",c:"（株）フジ（ＭＶ西日本）",r:"B",l:"郊外",d:"中",m:38.4},
-  {n:"マックスバリュ　平岡",c:"（株）フジ（ＭＶ西日本）",r:"E",l:"住宅地",d:"中",m:11.4},
-  {n:"マックスバリュ　別所",c:"（株）フジ（ＭＶ西日本）",r:"D",l:"郊外",d:"中",m:21.3},
-  {n:"マックスバリュ　宝殿",c:"（株）フジ（ＭＶ西日本）",r:"A",l:"ロードサイド",d:"中",m:60.8},
-  {n:"マックスバリュ　北在家",c:"（株）フジ（ＭＶ西日本）",r:"C",l:"住宅地",d:"中",m:30.2},
-  {n:"マックスバリュ　野口",c:"（株）フジ（ＭＶ西日本）",r:"C",l:"住宅地",d:"中",m:27.9},
-  {n:"マックスバリュ　友沢",c:"（株）フジ（ＭＶ西日本）",r:"D",l:"住宅地",d:"中",m:12.0},
-  {n:"関西ロピア　加古川ヤマトヤシキ店",c:"（株）ロピア（関西）",r:"C",l:"商業施設内",d:"強",m:29.2},
-  {n:"関西ロピア　新長田",c:"（株）ロピア（関西）",r:"B",l:"商業施設内",d:"強",m:39.6},
-  {n:"関西ロピア　神戸岩岡",c:"（株）ロピア（関西）",r:"B",l:"ロードサイド",d:"強",m:52.6},
-  {n:"関西スーパー　名谷",c:"（株）関西スーパーマーケット",r:"B",l:"ロードサイド",d:"中",m:39.3},
-  {n:"スーパーマーケットコーヨー　兵庫",c:"（株）光洋",r:"B",l:"駅前",d:"中",m:48.1},
-  {n:"ピーコックストア　明舞",c:"（株）光洋",r:"C",l:"住宅地",d:"中",m:34.6},
-  {n:"マックスバリュ　須磨",c:"（株）光洋",r:"C",l:"駅前",d:"中",m:22.6},
-  {n:"光洋　星陵台",c:"（株）光洋",r:"C",l:"住宅地",d:"中",m:28.8},
-  {n:"光洋　長田南",c:"（株）光洋",r:"C",l:"ロードサイド",d:"中",m:25.8},
-  {n:"西友　新長田",c:"（株）西友",r:"D",l:"駅前",d:"中",m:21.3},
-  {n:"パントリー　西神",c:"（株）大近",r:"C",l:"駅前",d:"強",m:29.6},
-  {n:"パントリー　明石店",c:"（株）大近",r:"C",l:"駅前",d:"強",m:24.8},
-  {n:"Aコープ　かみ",c:"ＪＡ全農Ａコープ（近畿）",r:"D",l:"郊外",d:"強",m:13.7},
-  {n:"Aコープ　にしわき",c:"ＪＡ全農Ａコープ（近畿）",r:"C",l:"郊外",d:"強",m:25.2},
-  {n:"Aコープ　フーディーズいなみ",c:"ＪＡ全農Ａコープ（近畿）",r:"B",l:"住宅地",d:"強",m:43.7},
-  {n:"Aコープ　フーディーズ神野",c:"ＪＡ全農Ａコープ（近畿）",r:"B",l:"住宅地",d:"強",m:37.4},
-  {n:"Aコープ　江井ヶ島",c:"ＪＡ全農Ａコープ（近畿）",r:"B",l:"住宅地",d:"強",m:35.0},
-  {n:"Aコープ　滝野",c:"ＪＡ全農Ａコープ（近畿）",r:"D",l:"郊外",d:"強",m:16.4},
-  {n:"イオン　Umie",c:"イオンリテール（株）",r:"B",l:"商業施設内",d:"弱",m:52.5},
-  {n:"イオン　ジェームス山",c:"イオンリテール（株）",r:"B",l:"住宅地",d:"弱",m:60.2},
-  {n:"イオン　加古川",c:"イオンリテール（株）",r:"A",l:"ロードサイド",d:"弱",m:63.4},
-  {n:"イオン　加西北条",c:"イオンリテール（株）",r:"A",l:"商業施設内",d:"弱",m:75.1},
-  {n:"イオン　高砂",c:"イオンリテール（株）",r:"A",l:"住宅地",d:"弱",m:98.4},
-  {n:"イオン　三木",c:"イオンリテール（株）",r:"A",l:"住宅地",d:"弱",m:63.5},
-  {n:"イオン　三木青山",c:"イオンリテール（株）",r:"B",l:"住宅地",d:"弱",m:59.9},
-  {n:"イオン　社",c:"イオンリテール（株）",r:"A",l:"住宅地",d:"弱",m:58.0},
-  {n:"イオン　神戸南",c:"イオンリテール（株）",r:"A",l:"商業施設内",d:"弱",m:83.0},
-  {n:"イオン　垂水",c:"イオンリテール（株）",r:"A",l:"駅前",d:"弱",m:103.2},
-  {n:"イオン　土山",c:"イオンリテール（株）",r:"B",l:"ロードサイド",d:"弱",m:41.3},
-  {n:"イオン　明石",c:"イオンリテール（株）",r:"A",l:"商業施設内",d:"弱",m:122.0},
-  {n:"イズミヤ　神戸玉津",c:"イズミヤ・阪急オアシス（株）",r:"B",l:"住宅地",d:"中",m:43.7},
-  {n:"イズミヤ　西神戸",c:"イズミヤ・阪急オアシス（株）",r:"A",l:"住宅地",d:"中",m:71.5},
-  {n:"オーケーストア　垂水小束山",c:"オーケー（株）",r:"C",l:"ロードサイド",d:"弱",m:24.0},
-  {n:"ボンマルシェ社店",c:"銀ビル",r:"D",l:"住宅地",d:"強",m:25.6},
-  {n:"ボンマルシェ西新町店",c:"銀ビル",r:"D",l:"住宅地",d:"強",m:12.8},
-  {n:"銀ビル 加西店",c:"銀ビル",r:"E",l:"住宅地",d:"強",m:7.0},
-  {n:"銀ビル志方店",c:"銀ビル",r:"D",l:"郊外",d:"強",m:15.9},
-  {n:"山陽マルナカ伊川谷店",c:"山陽マルナカ",r:"D",l:"住宅地",d:"強",m:26.2},
-  {n:"山陽マルナカ加古川店",c:"山陽マルナカ",r:"B",l:"ロードサイド",d:"強",m:58.8},
-  {n:"山陽マルナカ玉津店",c:"山陽マルナカ",r:"B",l:"住宅地",d:"強",m:47.7},
-  {n:"山陽マルナカ水谷店",c:"山陽マルナカ",r:"D",l:"住宅地",d:"強",m:19.9},
-  {n:"コープ　稲美",c:"生活協同組合コープこうべ",r:"D",l:"住宅地",d:"中",m:18.9},
-  {n:"コープ　魚住",c:"生活協同組合コープこうべ",r:"D",l:"住宅地",d:"中",m:24.0},
-  {n:"コープ　高丸",c:"生活協同組合コープこうべ",r:"E",l:"住宅地",d:"中",m:11.3},
-  {n:"コープ　高砂",c:"生活協同組合コープこうべ",r:"C",l:"住宅地",d:"中",m:23.0},
-  {n:"コープ　桜が丘",c:"生活協同組合コープこうべ",r:"D",l:"住宅地",d:"中",m:21.2},
-  {n:"コープ　三木緑が丘",c:"生活協同組合コープこうべ",r:"B",l:"住宅地",d:"中",m:35.5},
-  {n:"コープ　志染",c:"生活協同組合コープこうべ",r:"D",l:"住宅地",d:"中",m:19.7},
-  {n:"コープ　新多聞",c:"生活協同組合コープこうべ",r:"C",l:"住宅地",d:"中",m:21.1},
-  {n:"コープ　神吉",c:"生活協同組合コープこうべ",r:"C",l:"住宅地",d:"中",m:31.2},
-  {n:"コープ　神陵台",c:"生活協同組合コープこうべ",r:"E",l:"住宅地",d:"中",m:11.6},
-  {n:"コープ　須磨",c:"生活協同組合コープこうべ",r:"D",l:"住宅地",d:"中",m:18.5},
-  {n:"コープ　垂水",c:"生活協同組合コープこうべ",r:"A",l:"駅前",d:"中",m:57.4},
-  {n:"コープ　西神",c:"生活協同組合コープこうべ",r:"B",l:"住宅地",d:"中",m:33.8},
-  {n:"コープ　西神南",c:"生活協同組合コープこうべ",r:"B",l:"商業施設内",d:"中",m:55.4},
-  {n:"コープ　西明石",c:"生活協同組合コープこうべ",r:"B",l:"住宅地",d:"中",m:34.0},
-  {n:"コープ　大久保",c:"生活協同組合コープこうべ",r:"C",l:"住宅地",d:"中",m:25.5},
-  {n:"コープ　大蔵谷",c:"生活協同組合コープこうべ",r:"C",l:"住宅地",d:"中",m:22.8},
-  {n:"コープ　朝霧",c:"生活協同組合コープこうべ",r:"D",l:"駅前",d:"中",m:17.6},
-  {n:"コープ　播磨",c:"生活協同組合コープこうべ",r:"D",l:"住宅地",d:"中",m:12.4},
-  {n:"コープ　福田",c:"生活協同組合コープこうべ",r:"D",l:"住宅地",d:"中",m:16.8},
-  {n:"コープ　兵庫",c:"生活協同組合コープこうべ",r:"E",l:"駅前",d:"中",m:11.0},
-  {n:"コープ　北須磨",c:"生活協同組合コープこうべ",r:"E",l:"住宅地",d:"中",m:6.5},
-  {n:"コープ　名谷",c:"生活協同組合コープこうべ",r:"E",l:"住宅地",d:"中",m:8.5},
-  {n:"コープデイズ　神戸西",c:"生活協同組合コープこうべ",r:"B",l:"住宅地",d:"中",m:39.0},
-  {n:"ヤマダストアー須磨離宮公園前店",c:"ヤマダストアー",r:"E",l:"商業施設内",d:"弱",m:5.7},
-  {n:"ヤマダストアー北野店",c:"ヤマダストアー",r:"D",l:"ロードサイド",d:"弱",m:12.4},
-  {n:"ヤマダストアー阿弥陀店",c:"ヤマダストアー",r:"E",l:"ロードサイド",d:"弱",m:7.4},
-  {n:"ヤマダストアー朝霧店",c:"ヤマダストアー",r:"E",l:"住宅地",d:"弱",m:4.8},
-];
 
 const DISC_IDX={強:0,中:1,弱:2};
 const Y_MAX=160;
-let activeLocs=new Set(Object.keys(LOC_CFG));
-let chainFilter="";
+
+// フィルター状態（Set = 選択中、空Set = 全選択扱い）
+const filters = {
+  pri: new Set(),   // 空=全て表示
+  loc: new Set(),
+  staff: new Set(),
+  chain: new Set(),
+};
 
 const svgEl=document.getElementById("chart-svg");
 const tipEl=document.getElementById("tooltip");
 const detEl=document.getElementById("detail-bar");
 
+function isVisible(s){
+  if(filters.pri.size>0  && !filters.pri.has(s.p))  return false;
+  if(filters.loc.size>0  && !filters.loc.has(s.l))  return false;
+  if(filters.staff.size>0 && !filters.staff.has(s.a)) return false;
+  if(filters.chain.size>0 && !filters.chain.has(s.c)) return false;
+  return true;
+}
+
 function dims(){
   const w=document.getElementById("chart-wrap");
   return {W:w.clientWidth,H:w.clientHeight};
 }
-
-function isMobile(){return window.innerWidth<=900&&window.innerWidth<window.innerHeight*2;}
 
 function draw(){
   const {W,H}=dims();
@@ -426,11 +1622,12 @@ function draw(){
 
   Object.entries(buckets).forEach(([d,list])=>{
     list.forEach((s,i)=>{
-      const p=LOC_CFG[s.l];
+      const p=LOC_CFG[s.l]||{color:"#999",bg:"#eee",tc:"#333"};
+      const pc=PRI_CFG[s.p]||{bg:"#eee",tc:"#333"};
       const total=list.length;
       const spread=Math.min(PW/3*0.7,(total-1)*(mob?5:7));
       const jitter=total>1?-spread/2+(i/(total-1))*spread:0;
-      const vis=activeLocs.has(s.l)&&(!chainFilter||s.c===chainFilter);
+      const vis=isVisible(s);
       const x=cx(d,jitter),y=cy(s.m);
 
       const c=document.createElementNS(ns,"circle");
@@ -440,6 +1637,8 @@ function draw(){
       c.setAttribute("stroke","#fff");c.setAttribute("stroke-width","1.5");
       c.setAttribute("opacity",vis?"0.88":"0.05");
 
+      const pairTxt = s.pair==='〇' ? '　<span style="font-size:10px;color:#888;">ペア店舗</span>' : '';
+
       const showTip=(ex,ey)=>{
         tipEl.style.display="block";
         tipEl.innerHTML=`<div class="tip-name">${s.n}</div>
@@ -447,18 +1646,20 @@ function draw(){
           <div class="tip-row"><span class="tip-key">ランク</span><span class="tip-val">${s.r}</span></div>
           <div class="tip-row"><span class="tip-key">裁量</span><span class="tip-val">${s.d}</span></div>
           <div class="tip-row"><span class="tip-key">月平均</span><span class="tip-val">${s.m.toFixed(1)}万円</span></div>
-          <span class="loc-pill" style="background:${p.bg};color:${p.tc};">${s.l}</span>`;
-        const tx=ex,ty=ey;
-        tipEl.style.left=(tx>window.innerWidth-260?tx-250:tx+14)+"px";
-        tipEl.style.top=(ty-10)+"px";
+          <div class="tip-row"><span class="tip-key">担当者</span><span class="tip-val" style="font-family:'Noto Sans JP',sans-serif;">${s.a}</span></div>
+          <div style="margin-top:5px;">
+            <span class="loc-pill" style="background:${p.bg};color:${p.tc};">${s.l}</span>
+            <span class="pri-pill" style="background:${pc.bg};color:${pc.tc};">${s.p}</span>
+            ${s.pair==='〇'?'<span class="pri-pill" style="background:#f3f0ff;color:#5c4fcf;">ペア店舗</span>':''}
+          </div>`;
+        tipEl.style.left=(ex>window.innerWidth-280?ex-268:ex+14)+"px";
+        tipEl.style.top=(ey-10)+"px";
       };
 
-      // PC: hover
       c.addEventListener("mouseenter",e=>{if(!vis)return;showTip(e.clientX,e.clientY);});
       c.addEventListener("mousemove",e=>{if(!vis)return;showTip(e.clientX,e.clientY);});
       c.addEventListener("mouseleave",()=>tipEl.style.display="none");
 
-      // Mobile + PC: click/tap
       c.addEventListener("click",e=>{
         if(!vis)return;
         e.stopPropagation();
@@ -467,7 +1668,10 @@ function draw(){
         detEl.innerHTML=`<strong>${s.n}</strong>　<span style="color:var(--sub)">${s.c}</span>　
           ランク：<strong>${s.r}</strong>　裁量：<strong>${s.d}</strong>　
           月平均：<strong style="font-family:'DM Mono',monospace">${s.m.toFixed(1)}万円</strong>　
-          <span class="loc-pill" style="background:${p.bg};color:${p.tc};padding:2px 8px;border-radius:20px;font-size:11px;">${s.l}</span>`;
+          担当者：<strong>${s.a}</strong>　
+          <span class="loc-pill" style="background:${p.bg};color:${p.tc};padding:2px 8px;border-radius:20px;font-size:11px;">${s.l}</span>
+          <span class="pri-pill" style="background:${pc.bg};color:${pc.tc};padding:2px 8px;border-radius:20px;font-size:10px;">${s.p}</span>
+          ${s.pair==='〇'?'<span class="pri-pill" style="background:#f3f0ff;color:#5c4fcf;padding:2px 8px;border-radius:20px;font-size:10px;">ペア店舗</span>':''}`;
       });
       svgEl.appendChild(c);
     });
@@ -476,7 +1680,6 @@ function draw(){
   updateStats();
 }
 
-// タップで詳細を閉じる
 document.getElementById("chart-wrap").addEventListener("click",e=>{
   if(e.target===e.currentTarget||e.target.tagName==="svg"||e.target.tagName==="rect"||e.target.tagName==="line"||e.target.tagName==="text"){
     document.getElementById("detail-bar").style.display="none";
@@ -484,43 +1687,80 @@ document.getElementById("chart-wrap").addEventListener("click",e=>{
 });
 
 function updateStats(){
-  const vis=stores.filter(s=>activeLocs.has(s.l)&&(!chainFilter||s.c===chainFilter));
+  const vis=stores.filter(s=>isVisible(s));
   document.getElementById("stat-count").innerHTML=`${vis.length}<span class="stat-unit">店</span>`;
   const sum=vis.reduce((a,s)=>a+s.m,0);
   document.getElementById("stat-sum").innerHTML=`${Math.round(sum).toLocaleString()}<span class="stat-unit">万円</span>`;
   document.getElementById("count-badge").textContent=`${vis.length}店舗`;
 }
 
-function buildLocBtns(containerId){
-  const wrap=document.getElementById(containerId);
-  Object.entries(LOC_CFG).forEach(([name,p])=>{
-    const cnt=stores.filter(s=>s.l===name).length;
-    const btn=document.createElement("button");
-    btn.className="loc-btn";
-    btn.innerHTML=`<span class="loc-dot" style="background:${p.color}"></span>${name}<span class="loc-cnt">${cnt}</span>`;
-    btn.addEventListener("click",()=>{
-      if(activeLocs.has(name)){activeLocs.delete(name);btn.classList.add("off");}
-      else{activeLocs.add(name);btn.classList.remove("off");}
-      // sync both sets of buttons
-      document.querySelectorAll(".loc-btn").forEach(b=>{
-        if(b.textContent.includes(name))b.classList.toggle("off",!activeLocs.has(name));
-      });
-      draw();
-    });
-    wrap.appendChild(btn);
+// ===== フィルターボタン構築 =====
+
+function buildFilterBtn(label, filterKey, value, colorDot, containerId){
+  const wrap = document.getElementById(containerId);
+  const cnt = stores.filter(s=>s[filterKey]===value).length;
+  const btn = document.createElement("button");
+  btn.className = "filter-btn";
+  btn.dataset.key = filterKey;
+  btn.dataset.val = value;
+
+  let dotHtml = "";
+  if(colorDot) dotHtml = `<span class="f-dot" style="background:${colorDot}"></span>`;
+
+  btn.innerHTML = `${dotHtml}${label}<span class="f-cnt">${cnt}</span>`;
+
+  btn.addEventListener("click", ()=>{
+    const f = filters[filterKey];
+    if(f.has(value)){ f.delete(value); btn.classList.remove("active"); }
+    else { f.add(value); btn.classList.add("active"); }
+    // 両方のパネル同期
+    syncBtnState(filterKey, value, f.has(value));
+    draw();
+  });
+  wrap.appendChild(btn);
+}
+
+function syncBtnState(filterKey, value, active){
+  document.querySelectorAll(`.filter-btn[data-key="${filterKey}"][data-val="${value}"]`).forEach(b=>{
+    b.classList.toggle("active", active);
   });
 }
 
-function buildChainSel(selId){
-  const sel=document.getElementById(selId);
-  [...new Set(stores.map(s=>s.c))].sort().forEach(c=>{
-    const o=document.createElement("option");o.value=c;o.textContent=c;sel.appendChild(o);
+function buildFilters(suffix){
+  // 優先度
+  Object.keys(PRI_CFG).forEach(p=>{
+    buildFilterBtn(p, "pri", p, PRI_CFG[p].dot, `${suffix}-tab-pri`);
   });
-  sel.addEventListener("change",()=>{
-    chainFilter=sel.value;
-    // sync both selects
-    document.querySelectorAll(".chain-sel").forEach(s=>s.value=sel.value);
-    draw();
+  // 立地条件
+  Object.keys(LOC_CFG).forEach(l=>{
+    buildFilterBtn(l, "loc", l, LOC_CFG[l].color, `${suffix}-tab-loc`);
+  });
+  // 担当者
+  [...new Set(stores.map(s=>s.a))].sort().forEach(a=>{
+    buildFilterBtn(a, "staff", a, null, `${suffix}-tab-staff`);
+  });
+  // チェーン
+  [...new Set(stores.map(s=>s.c))].sort().forEach(c=>{
+    buildFilterBtn(c, "chain", c, null, `${suffix}-tab-chain`);
+  });
+}
+
+// タブ切り替え
+function setupTabs(tabsId, panelSelector){
+  const tabsWrap = document.getElementById(tabsId);
+  tabsWrap.querySelectorAll("[data-tab]").forEach(tab=>{
+    tab.addEventListener("click",()=>{
+      tabsWrap.querySelectorAll("[data-tab]").forEach(t=>t.classList.remove("active"));
+      tab.classList.add("active");
+      document.querySelectorAll(`#${tab.dataset.tab}`).forEach(panel=>{
+        panel.classList.add("active");
+      });
+      // 同じグループの他パネルを非表示
+      const groupPanels = tabsWrap.parentElement.querySelectorAll("[data-panel]");
+      groupPanels.forEach(p=>{
+        if(p.id !== tab.dataset.tab) p.classList.remove("active");
+      });
+    });
   });
 }
 
@@ -528,10 +1768,10 @@ function toggleMobFilter(){
   document.getElementById("mob-filter-panel").classList.toggle("open");
 }
 
-buildLocBtns("loc-btns-pc");
-buildLocBtns("loc-btns-mob");
-buildChainSel("chain-pc");
-buildChainSel("chain-mob");
+buildFilters("pc");
+buildFilters("mob");
+setupTabs("pc-tabs", "[data-panel]");
+setupTabs("mob-tabs", "[data-panel]");
 
 let resizeTimer;
 window.addEventListener("resize",()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(draw,80);});
