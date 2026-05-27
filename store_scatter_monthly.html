@@ -210,7 +210,13 @@ header{
 
     <!-- PC フィルタータブ -->
     <div>
-      <div class="sec-lbl">フィルター</div>
+      <div style="display:flex;align-items:center;margin-bottom:0;">
+        <div class="sec-lbl" style="margin-bottom:0;flex:1;">フィルター</div>
+        <button id="reset-btn" onclick="resetAllFilters()" style="
+          font-size:10px;padding:2px 8px;border-radius:5px;border:1px solid var(--border);
+          background:#f7f6f2;color:var(--muted);cursor:pointer;font-family:'Noto Sans JP',sans-serif;
+          display:none;">✕ クリア</button>
+      </div>
       <div class="filter-tabs" id="pc-tabs">
         <button class="ftab active" data-tab="pc-tab-pri">優先度</button>
         <button class="ftab" data-tab="pc-tab-loc">立地</button>
@@ -229,6 +235,13 @@ header{
     <!-- モバイル横向き用フィルター -->
     <button id="mob-filter-btn" onclick="toggleMobFilter()">⚙ フィルター</button>
     <div id="mob-filter-panel">
+      <div style="display:flex;align-items:center;margin-bottom:4px;">
+        <span style="font-size:10px;font-weight:700;color:var(--muted);flex:1;">フィルター</span>
+        <button id="mob-reset-btn" onclick="resetAllFilters()" style="
+          font-size:10px;padding:2px 8px;border-radius:5px;border:1px solid var(--border);
+          background:#f7f6f2;color:var(--muted);cursor:pointer;font-family:'Noto Sans JP',sans-serif;
+          display:none;">✕ クリア</button>
+      </div>
       <div class="mob-filter-tabs" id="mob-tabs">
         <button class="mob-ftab active" data-tab="mob-tab-pri">優先度</button>
         <button class="mob-ftab" data-tab="mob-tab-loc">立地</button>
@@ -251,6 +264,25 @@ header{
 <div class="tip" id="tooltip"></div>
 
 <script>
+const LOC_CFG = {
+  "商業施設内": {color:"#6c63d4",bg:"#eeedfe",tc:"#3c3489"},
+  "ロードサイド":{color:"#1a9968",bg:"#e1f5ee",tc:"#085041"},
+  "住宅地":      {color:"#2b7fd4",bg:"#e6f1fb",tc:"#0c447c"},
+  "駅前":        {color:"#d4870f",bg:"#faeeda",tc:"#633806"},
+};
+const PRI_CFG = {
+  "第1優先": {bg:"#fef0f0",tc:"#b81c1c",dot:"#e53935"},
+  "第2優先": {bg:"#fff8e1",tc:"#a06000",dot:"#f9a825"},
+  "第3優先": {bg:"#f1f8e9",tc:"#387027",dot:"#7cb342"},
+};
+const ZONES = [
+  [100,160,"rgba(108,99,212,0.10)","rgba(108,99,212,0.35)","S　100万円以上"],
+  [50, 100,"rgba(26,153,104,0.10)","rgba(26,153,104,0.35)","A　50〜100万円"],
+  [30, 50, "rgba(43,127,212,0.10)","rgba(43,127,212,0.35)","B　30〜50万円"],
+  [20, 30, "rgba(212,135,15,0.10)","rgba(212,135,15,0.35)","C　20〜30万円"],
+  [10, 20, "rgba(196,74,32,0.10)", "rgba(196,74,32,0.35)", "D　10〜20万円"],
+  [0,  10, "rgba(130,130,130,0.10)","rgba(130,130,130,0.3)","E　10万円以下"],
+];
 const stores = [
   {
     "n": "イトーヨーカドー　加古川",
@@ -1508,26 +1540,6 @@ const stores = [
   }
 ];
 
-const LOC_CFG = {
-  "商業施設内": {color:"#6c63d4",bg:"#eeedfe",tc:"#3c3489"},
-  "ロードサイド":{color:"#1a9968",bg:"#e1f5ee",tc:"#085041"},
-  "住宅地":      {color:"#2b7fd4",bg:"#e6f1fb",tc:"#0c447c"},
-  "駅前":        {color:"#d4870f",bg:"#faeeda",tc:"#633806"},
-};
-const PRI_CFG = {
-  "第1優先": {bg:"#fef0f0",tc:"#b81c1c",dot:"#e53935"},
-  "第2優先": {bg:"#fff8e1",tc:"#a06000",dot:"#f9a825"},
-  "第3優先": {bg:"#f1f8e9",tc:"#387027",dot:"#7cb342"},
-};
-const ZONES = [
-  [100,160,"rgba(108,99,212,0.10)","rgba(108,99,212,0.35)","S　100万円以上"],
-  [50, 100,"rgba(26,153,104,0.10)","rgba(26,153,104,0.35)","A　50〜100万円"],
-  [30, 50, "rgba(43,127,212,0.10)","rgba(43,127,212,0.35)","B　30〜50万円"],
-  [20, 30, "rgba(212,135,15,0.10)","rgba(212,135,15,0.35)","C　20〜30万円"],
-  [10, 20, "rgba(196,74,32,0.10)", "rgba(196,74,32,0.35)", "D　10〜20万円"],
-  [0,  10, "rgba(130,130,130,0.10)","rgba(130,130,130,0.3)","E　10万円以下"],
-];
-
 const DISC_IDX={強:0,中:1,弱:2};
 const Y_MAX=160;
 
@@ -1696,9 +1708,29 @@ function updateStats(){
 
 // ===== フィルターボタン構築 =====
 
+function hasActiveFilter(){
+  return filters.pri.size>0||filters.loc.size>0||filters.staff.size>0||filters.chain.size>0;
+}
+
+function updateResetBtn(){
+  const show = hasActiveFilter();
+  ['reset-btn','mob-reset-btn'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display=show?'':'none';
+  });
+}
+
+function resetAllFilters(){
+  ['pri','loc','staff','chain'].forEach(k=>filters[k].clear());
+  document.querySelectorAll('.filter-btn.active').forEach(b=>b.classList.remove('active'));
+  updateResetBtn();
+  draw();
+}
+
 function buildFilterBtn(label, filterKey, value, colorDot, containerId){
   const wrap = document.getElementById(containerId);
   const cnt = stores.filter(s=>s[filterKey]===value).length;
+  if(!wrap) return;
   const btn = document.createElement("button");
   btn.className = "filter-btn";
   btn.dataset.key = filterKey;
@@ -1715,6 +1747,7 @@ function buildFilterBtn(label, filterKey, value, colorDot, containerId){
     else { f.add(value); btn.classList.add("active"); }
     // 両方のパネル同期
     syncBtnState(filterKey, value, f.has(value));
+    updateResetBtn();
     draw();
   });
   wrap.appendChild(btn);
