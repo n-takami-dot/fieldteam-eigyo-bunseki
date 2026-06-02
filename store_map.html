@@ -64,6 +64,13 @@ header{
 .f-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
 .f-cnt{margin-left:auto;font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);}
 .scroll-list{max-height:180px;overflow-y:auto;}
+.scroll-list .filter-btn{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  display:flex;
+  align-items:center;
+}
 
 /* 凡例 */
 .legend-row{display:flex;align-items:center;gap:7px;margin-bottom:5px;font-size:11px;color:var(--sub);}
@@ -1950,10 +1957,10 @@ function buildLegend(){
 }
 
 // フィルターボタン
-function buildFilterBtn(label, filterKey, value, colorDot, containerId){
+function buildFilterBtn(label, filterKey, dataKey, value, colorDot, containerId){
   const wrap = document.getElementById(containerId);
   if(!wrap) return;
-  const cnt = stores.filter(s=>s[filterKey]===value).length;
+  const cnt = stores.filter(s=>s[dataKey]===value).length;
   const btn = document.createElement("button");
   btn.className="filter-btn";
   btn.dataset.key=filterKey;
@@ -1973,13 +1980,13 @@ function buildFilterBtn(label, filterKey, value, colorDot, containerId){
 
 function buildFilters(suffix){
   Object.entries(STAFF_CFG).forEach(([a,cfg])=>
-    buildFilterBtn(a,"staff",a,cfg.color,`${suffix}-tab-staff`));
+    buildFilterBtn(a,"staff","a",a,cfg.color,`${suffix}-tab-staff`));
   Object.keys(PRI_CFG).forEach(p=>
-    buildFilterBtn(p,"pri",p,null,`${suffix}-tab-pri`));
+    buildFilterBtn(p,"pri","p",p,null,`${suffix}-tab-pri`));
   Object.keys(LOC_CFG).forEach(l=>
-    buildFilterBtn(l,"loc",l,LOC_CFG[l].color,`${suffix}-tab-loc`));
+    buildFilterBtn(l,"loc","l",l,LOC_CFG[l].color,`${suffix}-tab-loc`));
   [...new Set(stores.map(s=>s.c))].sort().forEach(c=>
-    buildFilterBtn(c,"chain",c,null,`${suffix}-tab-chain`));
+    buildFilterBtn(c,"chain","c",c,null,`${suffix}-tab-chain`));
 }
 
 function setupTabs(tabsId){
