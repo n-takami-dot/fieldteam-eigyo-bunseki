@@ -93,6 +93,22 @@ header{
   text-decoration:none;border:1px solid rgba(0,0,0,0.08);}
 .popup-gmaps:hover{background:#e6f1fb;}
 
+/* ラベルツールチップ */
+.store-label{
+  background:rgba(255,255,255,0.92);
+  border:1px solid rgba(0,0,0,0.12);
+  border-radius:4px;
+  padding:2px 6px;
+  font-size:10px;
+  font-family:'Noto Sans JP',sans-serif;
+  font-weight:500;
+  color:#1a1a18;
+  white-space:nowrap;
+  box-shadow:0 1px 4px rgba(0,0,0,0.12);
+  pointer-events:none;
+}
+.store-label::before{ display:none; }
+
 /* リセットボタン */
 #reset-btn{font-size:10px;padding:2px 8px;border-radius:5px;
   border:1px solid var(--border);background:#f7f6f2;color:var(--muted);
@@ -130,6 +146,12 @@ header{
   </div>
   <div class="h-sub">担当者別カラー表示</div>
   <span class="h-badge" id="count-badge">114店舗</span>
+  <button id="label-toggle-btn" onclick="toggleLabels()" style="
+    font-size:11px;padding:3px 10px;border-radius:6px;
+    border:1px solid var(--border);background:#f0ede4;
+    color:var(--sub);cursor:pointer;font-family:'Noto Sans JP',sans-serif;
+    white-space:nowrap;flex-shrink:0;transition:background .12s,color .12s;
+  ">🏷 ラベル OFF</button>
   <a class="back-link" href="index.html">← 一覧</a>
 </header>
 
@@ -1864,13 +1886,38 @@ function buildPopup(s){
 }
 
 // マーカー生成
+let labelVisible = false;
+
 stores.forEach(s=>{
   const sc = STAFF_CFG[s.a] || {color:"#999"};
   const marker = L.marker([s.lat, s.lng], {icon: makeIcon(sc.color)})
-    .bindPopup(buildPopup(s), {maxWidth:260, minWidth:220});
+    .bindPopup(buildPopup(s), {maxWidth:260, minWidth:220})
+    .bindTooltip(s.n, {
+      permanent: false,
+      direction: "top",
+      offset: [0, -12],
+      className: "store-label"
+    });
   markerMap[s.n] = {marker, store:s};
   marker.addTo(map);
 });
+
+function toggleLabels(){
+  labelVisible = !labelVisible;
+  const btn = document.getElementById("label-toggle-btn");
+  btn.textContent = labelVisible ? "🏷 ラベル ON" : "🏷 ラベル OFF";
+  btn.style.background = labelVisible ? "#1a9968" : "#f0ede4";
+  btn.style.color = labelVisible ? "#fff" : "var(--sub)";
+  btn.style.borderColor = labelVisible ? "#1a9968" : "var(--border)";
+  Object.values(markerMap).forEach(({marker})=>{
+    marker.setTooltipContent(marker.getTooltip().getContent());
+    if(labelVisible){
+      marker.openTooltip();
+    } else {
+      marker.closeTooltip();
+    }
+  });
+}
 
 function updateMarkers(){
   let count = 0;
@@ -1878,6 +1925,8 @@ function updateMarkers(){
     const vis = isVisible(store);
     if(vis){
       marker.addTo(map);
+      if(labelVisible) marker.openTooltip();
+      else marker.closeTooltip();
       count++;
     } else {
       marker.remove();
