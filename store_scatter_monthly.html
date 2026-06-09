@@ -570,51 +570,72 @@ function toggleMobFilter(){
   document.getElementById("mob-filter-panel").classList.toggle("open");
 }
 
+const cache = {};
 let currentSheet = "current";
 
-async function loadData(sheetKey){
+function fetchSheet(sheetKey){
+  return new Promise((resolve, reject)=>{
+    const old = document.getElementById(`jsonp-${sheetKey}`);
+    if(old) old.remove();
+    const cbName = `__cb_${sheetKey}`;
+    const timeoutId = setTimeout(()=>{
+      reject(new Error(`タイムアウト: ${sheetKey}`));
+    }, 15000);
+    window[cbName] = function(json){
+      clearTimeout(timeoutId);
+      delete window[cbName];
+      if(json.error){ reject(new Error(json.error)); return; }
+      resolve(json.stores);
+    };
+    const script = document.createElement("script");
+    script.id = `jsonp-${sheetKey}`;
+    script.src = `${API_URL}?sheet=${sheetKey}&callback=${cbName}`;
+    script.onerror = ()=>{ clearTimeout(timeoutId); reject(new Error(`読込失敗: ${sheetKey}`)); };
+    document.head.appendChild(script);
+  });
+}
+
+async function loadAllSheets(){
   document.getElementById("loading-badge").style.display="";
   document.getElementById("count-badge").textContent="読込中...";
-
-  // 既存のJSONPスクリプトタグを削除
-  const old = document.getElementById("jsonp-script");
-  if(old) old.remove();
-
-  // タイムアウト処理
-  const timeoutId = setTimeout(()=>{
+  try{
+    const [cur, p26, p27] = await Promise.all([
+      fetchSheet("current"),
+      fetchSheet("plan2026"),
+      fetchSheet("plan2027"),
+    ]);
+    cache["current"]  = cur;
+    cache["plan2026"] = p26;
+    cache["plan2027"] = p27;
+    applySheet("current");
+  } catch(e){
     document.getElementById("count-badge").textContent="読込エラー";
+    console.error(e);
+  } finally {
     document.getElementById("loading-badge").style.display="none";
-  }, 10000);
+  }
+}
 
-  // グローバルコールバック関数を定義
-  window.__dashboardCallback = function(json){
-    clearTimeout(timeoutId);
-    document.getElementById("loading-badge").style.display="none";
-    if(json.error){
-      document.getElementById("count-badge").textContent="読込エラー";
-      console.error(json.error);
-      return;
-    }
-    stores = json.stores;
-    currentSheet = sheetKey;
-    // フィルターリセット・再構築
-    Object.keys(filters).forEach(k=>filters[k].clear());
-    ["pc-tab-pri","pc-tab-loc","pc-tab-staff","pc-tab-chain",
-     "mob-tab-pri","mob-tab-loc","mob-tab-staff","mob-tab-chain"].forEach(id=>{
-      const el=document.getElementById(id);
-      if(el) el.innerHTML="";
+function applySheet(sheetKey){
+  stores = cache[sheetKey] || [];
+  currentSheet = sheetKey;
+  // フィルターボタンだけ再構築（選択状態は維持）
+  ["pc-tab-pri","pc-tab-loc","pc-tab-staff","pc-tab-chain",
+   "mob-tab-pri","mob-tab-loc","mob-tab-staff","mob-tab-chain"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.innerHTML="";
+  });
+  buildFilters("pc");
+  buildFilters("mob");
+  // 選択済みボタンを復元
+  Object.entries(filters).forEach(([key, vals])=>{
+    vals.forEach(val=>{
+      document.querySelectorAll(`.filter-btn[data-key="${key}"][data-val="${val}"]`)
+        .forEach(b=>b.classList.add("active"));
     });
-    buildFilters("pc");
-    buildFilters("mob");
-    updateResetBtn();
-    draw();
-  };
-
-  // JSONPリクエスト
-  const script = document.createElement("script");
-  script.id = "jsonp-script";
-  script.src = `${API_URL}?sheet=${sheetKey}&callback=__dashboardCallback`;
-  document.head.appendChild(script);
+  });
+  updateResetBtn();
+  draw();
 }
 
 function switchSheet(sheetKey){
@@ -622,7 +643,11 @@ function switchSheet(sheetKey){
   document.querySelectorAll(".sheet-btn").forEach(b=>{
     b.classList.toggle("active", b.dataset.sheet===sheetKey);
   });
-  loadData(sheetKey);
+  if(cache[sheetKey]){
+    applySheet(sheetKey);
+  } else {
+    loadAllSheets();
+  }
 }
 
 buildFilters("pc");
@@ -633,7 +658,7 @@ setupTabs("mob-tabs", "[data-panel]");
 let resizeTimer;
 window.addEventListener("resize",()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(draw,80);});
 window.addEventListener("orientationchange",()=>{setTimeout(draw,300);});
-loadData("current");
+loadAllSheets();
 </script>
 </body>
 </html>
