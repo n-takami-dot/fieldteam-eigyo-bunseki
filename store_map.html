@@ -447,25 +447,38 @@ let currentSheet = "current";
 async function loadData(sheetKey){
   document.getElementById("loading-badge").style.display="";
   document.getElementById("count-badge").textContent="読込中...";
-  try{
-    const res = await fetch(`${API_URL}?sheet=${sheetKey}`);
-    const json = await res.json();
-    if(json.error){ throw new Error(json.error); }
+
+  // 既存のJSONPスクリプトタグを削除
+  const old = document.getElementById("jsonp-script");
+  if(old) old.remove();
+
+  // タイムアウト処理
+  const timeoutId = setTimeout(()=>{
+    document.getElementById("count-badge").textContent="読込エラー";
+    document.getElementById("loading-badge").style.display="none";
+  }, 10000);
+
+  // グローバルコールバック関数を定義
+  window.__dashboardCallback = function(json){
+    clearTimeout(timeoutId);
+    document.getElementById("loading-badge").style.display="none";
+    if(json.error){
+      document.getElementById("count-badge").textContent="読込エラー";
+      console.error(json.error);
+      return;
+    }
     stores = json.stores;
     currentSheet = sheetKey;
-    // 既存マーカーを全削除
+    // 既存マーカー削除
     Object.values(markerMap).forEach(({marker})=>marker.remove());
     markerMap = {};
-    // 凡例・フィルター再構築
     document.getElementById("staff-legend").innerHTML="";
     ["pc-tab-staff","pc-tab-pri","pc-tab-loc","pc-tab-chain",
      "mob-tab-staff","mob-tab-pri","mob-tab-loc","mob-tab-chain"].forEach(id=>{
       const el=document.getElementById(id);
       if(el) el.innerHTML="";
     });
-    // フィルターリセット
     Object.keys(filters).forEach(k=>filters[k].clear());
-    // マーカー再生成
     stores.forEach(s=>{
       if(!s.lat||!s.lng) return;
       const sc=STAFF_CFG[s.a]||{color:"#999"};
@@ -481,12 +494,12 @@ async function loadData(sheetKey){
     setupTabs("pc-tabs");
     setupTabs("mob-tabs");
     updateMarkers();
-  } catch(e){
-    document.getElementById("count-badge").textContent="読込エラー";
-    console.error(e);
-  } finally {
-    document.getElementById("loading-badge").style.display="none";
-  }
+  };
+
+  const script = document.createElement("script");
+  script.id = "jsonp-script";
+  script.src = `${API_URL}?sheet=${sheetKey}&callback=__dashboardCallback`;
+  document.head.appendChild(script);
 }
 
 function switchSheet(sheetKey){

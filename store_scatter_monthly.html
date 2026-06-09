@@ -575,15 +575,30 @@ let currentSheet = "current";
 async function loadData(sheetKey){
   document.getElementById("loading-badge").style.display="";
   document.getElementById("count-badge").textContent="読込中...";
-  try{
-    const res = await fetch(`${API_URL}?sheet=${sheetKey}`);
-    const json = await res.json();
-    if(json.error){ throw new Error(json.error); }
+
+  // 既存のJSONPスクリプトタグを削除
+  const old = document.getElementById("jsonp-script");
+  if(old) old.remove();
+
+  // タイムアウト処理
+  const timeoutId = setTimeout(()=>{
+    document.getElementById("count-badge").textContent="読込エラー";
+    document.getElementById("loading-badge").style.display="none";
+  }, 10000);
+
+  // グローバルコールバック関数を定義
+  window.__dashboardCallback = function(json){
+    clearTimeout(timeoutId);
+    document.getElementById("loading-badge").style.display="none";
+    if(json.error){
+      document.getElementById("count-badge").textContent="読込エラー";
+      console.error(json.error);
+      return;
+    }
     stores = json.stores;
     currentSheet = sheetKey;
-    // フィルターリセット
+    // フィルターリセット・再構築
     Object.keys(filters).forEach(k=>filters[k].clear());
-    // フィルターボタン再構築
     ["pc-tab-pri","pc-tab-loc","pc-tab-staff","pc-tab-chain",
      "mob-tab-pri","mob-tab-loc","mob-tab-staff","mob-tab-chain"].forEach(id=>{
       const el=document.getElementById(id);
@@ -593,12 +608,13 @@ async function loadData(sheetKey){
     buildFilters("mob");
     updateResetBtn();
     draw();
-  } catch(e){
-    document.getElementById("count-badge").textContent="読込エラー";
-    console.error(e);
-  } finally {
-    document.getElementById("loading-badge").style.display="none";
-  }
+  };
+
+  // JSONPリクエスト
+  const script = document.createElement("script");
+  script.id = "jsonp-script";
+  script.src = `${API_URL}?sheet=${sheetKey}&callback=__dashboardCallback`;
+  document.head.appendChild(script);
 }
 
 function switchSheet(sheetKey){
