@@ -188,6 +188,10 @@ header{
         <div class="stat-lbl">表示中店舗数</div>
         <div class="stat-val" id="stat-count">114<span class="stat-unit">店</span></div>
       </div>
+      <div class="stat-box">
+        <div class="stat-lbl">月間合計金額</div>
+        <div class="stat-val" id="stat-monthly">—<span class="stat-unit">万円</span></div>
+      </div>
     </div>
     <div>
       <div class="sec-lbl">担当者カラー</div>
@@ -351,6 +355,7 @@ function toggleLabels(){
 
 function updateMarkers(){
   let count = 0;
+  let totalMonthly = 0;
   Object.values(markerMap).forEach(({marker, store})=>{
     const vis = isVisible(store);
     if(vis){
@@ -358,12 +363,15 @@ function updateMarkers(){
       if(labelVisible) marker.openTooltip();
       else marker.closeTooltip();
       count++;
+      totalMonthly += Number(store.m) || 0;
     } else {
       marker.remove();
     }
   });
   document.getElementById("stat-count").innerHTML = `${count}<span class="stat-unit">店</span>`;
   document.getElementById("count-badge").textContent = `${count}店舗`;
+  const manEn = Math.round(totalMonthly);
+  document.getElementById("stat-monthly").innerHTML = `${manEn.toLocaleString()}<span class="stat-unit">万円</span>`;
   updateResetBtn();
 }
 
