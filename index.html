@@ -89,9 +89,12 @@ main {
 /* ── Cards ── */
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: 1fr 1fr;
   gap: 16px;
   margin-bottom: 48px;
+}
+@media (max-width: 640px) {
+  .cards { grid-template-columns: 1fr; }
 }
 
 .card {
@@ -189,33 +192,30 @@ footer {
   <div class="page-title">分析レポート一覧</div>
   <div class="page-sub">ファイルをクリックすると別タブで開きます。</div>
 
-  <div class="section-label">STP 分析</div>
+  <div class="section-label">分析ツール</div>
   <div class="cards">
 
-    <a class="card" href="stp_analysis.html" target="_blank">
-      <div class="card-icon" style="background:#EEEDFE;">
+    <a class="card" href="store_map.html" target="_blank">
+      <div class="card-icon" style="background:#E1F5EE;">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <rect x="3" y="12" width="3" height="9" rx="1" fill="#7F77DD" opacity="0.5"/>
-        <rect x="8" y="8" width="3" height="13" rx="1" fill="#7F77DD" opacity="0.75"/>
-        <rect x="13" y="4" width="3" height="17" rx="1" fill="#7F77DD"/>
-        <circle cx="18" cy="8" r="3.5" fill="none" stroke="#7F77DD" stroke-width="1.5"/>
-        <path d="M18 6.5v1.5l1 1" stroke="#7F77DD" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#1A9968" opacity="0.2"/>
+        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="#1A9968" stroke-width="1.5" fill="none"/>
+        <circle cx="12" cy="9" r="2.5" fill="#1A9968"/>
+        <circle cx="7" cy="17" r="1.5" fill="#E53935" opacity="0.8"/>
+        <circle cx="17" cy="15" r="1.5" fill="#2B7FD4" opacity="0.8"/>
+        <circle cx="9" cy="13" r="1.5" fill="#D4870F" opacity="0.8"/>
       </svg>
     </div>
-      <div class="card-title">STP分析</div>
+      <div class="card-title">店舗マップ</div>
       <div class="card-desc">
-        店舗分類表をもとにセグメンテーション・ターゲティング・ポジショニングを整理。売上ランク別構成比や4象限ポジションマップを含む。
+        114店舗の位置を地図上にプロット。担当者別カラー表示・フィルター機能付き。現行／2026年7月案／2027年度案をボタンで切り替え可能。データはスプレッドシートから自動取得。
       </div>
       <div class="card-footer">
-        <span class="card-tag" style="background:#EEEDFE;color:#3C3489;">STP・戦略</span>
+        <span class="card-tag" style="background:#E1F5EE;color:#085041;">位置情報・担当者別</span>
         <span class="card-arrow">→</span>
       </div>
     </a>
 
-  </div>
-
-  <div class="section-label">店舗散布図</div>
-  <div class="cards">
     <a class="card" href="store_scatter_monthly.html" target="_blank">
       <div class="card-icon" style="background:#FAEEDA;">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -239,30 +239,6 @@ footer {
       </div>
     </a>
 
-  </div>
-
-  <div class="section-label">店舗マップ</div>
-  <div class="cards">
-    <a class="card" href="store_map.html" target="_blank">
-      <div class="card-icon" style="background:#E1F5EE;">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#1A9968" opacity="0.2"/>
-        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="#1A9968" stroke-width="1.5" fill="none"/>
-        <circle cx="12" cy="9" r="2.5" fill="#1A9968"/>
-        <circle cx="7" cy="17" r="1.5" fill="#E53935" opacity="0.8"/>
-        <circle cx="17" cy="15" r="1.5" fill="#2B7FD4" opacity="0.8"/>
-        <circle cx="9" cy="13" r="1.5" fill="#D4870F" opacity="0.8"/>
-      </svg>
-    </div>
-      <div class="card-title">店舗マップ</div>
-      <div class="card-desc">
-        114店舗の位置を地図上にプロット。担当者別カラー表示・フィルター機能付き。現行／2026年7月案／2027年度案をボタンで切り替え可能。データはスプレッドシートから自動取得。
-      </div>
-      <div class="card-footer">
-        <span class="card-tag" style="background:#E1F5EE;color:#085041;">位置情報・担当者別</span>
-        <span class="card-arrow">→</span>
-      </div>
-    </a>
   </div>
 
   <div class="section-label">使い方</div>
